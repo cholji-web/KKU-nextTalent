@@ -60,6 +60,22 @@
       white-space: pre-wrap; word-break: break-word;
     }
 
+    /* ---------- Avatar / Thumbnail ---------- */
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; color: #fff;
+      flex-shrink: 0; overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar-sm { width: 32px; height: 32px; font-size: 0.8rem; }
+    .avatar-lg { width: 64px; height: 64px; font-size: 1.4rem; }
+
+    .user-header { display: flex; align-items: center; gap: 12px; }
+    .pending-info-row { display: flex; align-items: center; gap: 10px; }
+    .search-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+
     /* ---------- หน้าหลัก ---------- */
     #userCard {
       background: #fff; border: 1px solid var(--border); border-radius: 10px;
@@ -288,6 +304,43 @@
     }
 
     /* ==================================================================
+     * AVATAR / THUMBNAIL — ใช้ร่วมกันทุก view
+     * ถ้ามี photoUrl แสดงรูปจริง ถ้าไม่มี generate เป็นวงกลมสีตัวอักษรย่อ
+     * สีเลือกแบบ deterministic จาก userId เพื่อให้คนเดิมได้สีเดิมเสมอ
+     * ================================================================== */
+    const AVATAR_COLORS = [
+      '#ea580c', '#f59e0b', '#65a30d', '#0891b2',
+      '#7c3aed', '#db2777', '#e11d48', '#0d9488'
+    ];
+
+    function pickAvatarColor(seed) {
+      var hash = 0;
+      for (var i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) & 0xffffffff;
+      }
+      var index = Math.abs(hash) % AVATAR_COLORS.length;
+      return AVATAR_COLORS[index];
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      var parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+
+    // sizeClass: '' (44px, default) | 'avatar-sm' (32px) | 'avatar-lg' (64px)
+    function avatarHtml(name, userId, photoUrl, sizeClass) {
+      sizeClass = sizeClass || '';
+      if (photoUrl) {
+        return `<div class="avatar ${sizeClass}"><img src="${photoUrl}" alt="${name}"></div>`;
+      }
+      var color = pickAvatarColor(userId || name || 'x');
+      var initials = getInitials(name);
+      return `<div class="avatar ${sizeClass}" style="background:${color}">${initials}</div>`;
+    }
+
+    /* ==================================================================
      * VIEW: หน้าหลัก (Part 1)
      * ================================================================== */
     let currentUserId = null;
@@ -334,9 +387,16 @@
       const badgeIcon = tier
         ? `<svg class="badge-icon unlocked" style="--badge-color:${tier.color}" viewBox="0 0 24 24" width="28" height="28"><path d="${tier.path}"/></svg>`
         : '';
+      const avatar = avatarHtml(state.name, state.userId, state.photoUrl, 'avatar-lg');
+
       document.getElementById('userCard').innerHTML =
-        `<h3>${state.name} — ${state.department}</h3>
-         <p>${badgeIcon} Level ${g.level} (${g.badge.name}) — XP ${g.xpIntoLevel}/${g.xpForNextLevel}${pendingBadge}</p>`;
+        `<div class="user-header">
+           ${avatar}
+           <div>
+             <h3 style="margin:0;">${state.name} — ${state.department}</h3>
+             <p>${badgeIcon} Level ${g.level} (${g.badge.name}) — XP ${g.xpIntoLevel}/${g.xpForNextLevel}${pendingBadge}</p>
+           </div>
+         </div>`;
       renderSpecialList(state.specialList);
       renderSubmissions(state.submissions);
     }
@@ -470,12 +530,16 @@
       }
       container.innerHTML = pendingSubmissions.map(item => {
         const d = item.timestamp ? new Date(item.timestamp).toLocaleString('th-TH') : '-';
+        const avatar = avatarHtml(item.userName, item.userId, item.userPhotoUrl, 'avatar-sm');
         return `
           <div class="pending-card">
-            <div class="pending-info">
-              <strong>${item.userName}</strong> <span style="color:var(--text-muted)">(${item.department})</span>
-              📅 ${d}
-              ${item.skill} / ${item.level} — <strong>XP ${item.xp}</strong>
+            <div class="pending-info-row">
+              ${avatar}
+              <div class="pending-info">
+                <strong>${item.userName}</strong> <span style="color:var(--text-muted)">(${item.department})</span>
+                📅 ${d}
+                ${item.skill} / ${item.level} — <strong>XP ${item.xp}</strong>
+              </div>
             </div>
             <div class="pending-actions">
               <button class="btn-view" onclick="openEditModal('${item.id}')">👁 ดู/แก้ไข</button>
@@ -584,8 +648,12 @@
         const tags = r.skillTags.length
           ? r.skillTags.map(s => `<span class="skill-tag">${s}</span>`).join('')
           : '<span class="skill-tag skill-tag-empty">ยังไม่มีทักษะที่อนุมัติ</span>';
+        const avatar = avatarHtml(r.name, r.userId, r.photoUrl, '');
         return `<div class="search-card">
-          <h4>${r.name} <small>(${r.department})</small></h4>
+          <div class="search-card-header">
+            ${avatar}
+            <h4 style="margin:0;">${r.name} <small>(${r.department})</small></h4>
+          </div>
           <p style="display:flex;align-items:center;gap:6px;margin:0;">
             ${badgeIcon} Level ${r.growupLevel.level} (${r.growupLevel.badge.name})
           </p>

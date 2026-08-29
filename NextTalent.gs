@@ -1,6 +1,6 @@
 /**
  * ==================================================================
- * NextTalent Prototype — Part 1 + Part 2 (Google Apps Script)
+ * NextTalent Prototype — Part 1 + Part 2 + Avatar (Google Apps Script)
  * Entry point เดียวของ Web App — single-page app ตั้งแต่แรก
  * เสิร์ฟ App.html ไฟล์เดียวเสมอ การสลับ view (หน้าหลัก/Admin/ค้นหา)
  * ทำด้วย JS ฝั่ง client ทั้งหมด — ไม่มี doPost()
@@ -17,13 +17,19 @@ function doGet() {
  * SETUP — รันครั้งเดียวก่อนใช้งานจริง
  * ================================================================== */
 
+/**
+ * รันครั้งเดียวก่อนใช้งาน — สร้าง Sheet Users / Submissions / Config พร้อม header
+ * ไม่เขียนทับถ้ามี Sheet นั้นอยู่แล้ว (เช็คแค่ชื่อ Sheet ไม่เช็คข้อมูลข้างใน)
+ * Users มีคอลัมน์ photoUrl (D) ไว้ใส่ลิงก์รูปโปรไฟล์ — ปล่อยว่างได้ ฝั่ง client จะ
+ * generate เป็น avatar ตัวอักษรย่อสีอัตโนมัติแทน
+ */
 function setupSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
   var usersSheet = ss.getSheetByName('Users');
   if (!usersSheet) {
     usersSheet = ss.insertSheet('Users');
-    usersSheet.appendRow(['userId', 'name', 'department']);
+    usersSheet.appendRow(['userId', 'name', 'department', 'photoUrl']);
     usersSheet.setFrozenRows(1);
   }
 
@@ -47,21 +53,28 @@ function setupSheet() {
   Logger.log('setupSheet() เสร็จสิ้น: Users / Submissions / Config พร้อมใช้งาน');
 }
 
+/**
+ * รันครั้งเดียวหลัง setupSheet() — ใส่ค่า default ลง Config และ user ตัวอย่างลง Users
+ * เช็คว่า Sheet มีข้อมูลอยู่แล้วหรือยัง (getLastRow() <= 1 คือมีแค่ header)
+ * ถ้ามีข้อมูลแล้วจะไม่เขียนทับ
+ */
 function setupSeedData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
+  // --- seed Users (photoUrl เว้นว่างไว้ — ให้ระบบ generate avatar ตัวอักษรย่อเอง) ---
   var usersSheet = ss.getSheetByName('Users');
   if (!usersSheet) {
     throw new Error('ไม่พบ Sheet "Users" — กรุณารัน setupSheet() ก่อน');
   }
   if (usersSheet.getLastRow() <= 1) {
-    usersSheet.getRange(2, 1, 3, 3).setValues([
-      ['u001', 'มานะ ใจดี', 'ฝ่าย IT'],
-      ['u002', 'สมหญิง รักเรียน', 'ฝ่ายบริหาร'],
-      ['u003', 'วิชัย ตั้งใจทำงาน', 'ฝ่ายทั่วไป']
+    usersSheet.getRange(2, 1, 3, 4).setValues([
+      ['u001', 'มานะ ใจดี', 'ฝ่าย IT', ''],
+      ['u002', 'สมหญิง รักเรียน', 'ฝ่ายบริหาร', ''],
+      ['u003', 'วิชัย ตั้งใจทำงาน', 'ฝ่ายทั่วไป', '']
     ]);
   }
 
+  // --- seed Config ---
   var configSheet = ss.getSheetByName('Config');
   if (!configSheet) {
     throw new Error('ไม่พบ Sheet "Config" — กรุณารัน setupSheet() ก่อน');
@@ -85,11 +98,31 @@ function setupSeedData() {
   Logger.log('setupSeedData() เสร็จสิ้น: Config และ Users มีข้อมูลตัวอย่างพร้อมใช้งาน');
 }
 
+/**
+ * MIGRATION: ใช้ตอน Sheet Users มีอยู่แล้วก่อนหน้า (deploy รอบก่อนยังไม่มี photoUrl)
+ * รันครั้งเดียวเพื่อเพิ่มคอลัมน์ photoUrl ที่ท้ายตาราง Users แบบไม่กระทบข้อมูลเดิม
+ * ถ้ามีคอลัมน์ photoUrl อยู่แล้วจะไม่ทำอะไร (เช็คจาก header row)
+ */
+function migrateAddPhotoUrlColumn() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
+  if (!sheet) {
+    throw new Error('ไม่พบ Sheet "Users" — กรุณารัน setupSheet() ก่อน');
+  }
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (headers.indexOf('photoUrl') !== -1) {
+    Logger.log('คอลัมน์ photoUrl มีอยู่แล้ว ไม่ต้อง migrate');
+    return;
+  }
+  var newCol = sheet.getLastColumn() + 1;
+  sheet.getRange(1, newCol).setValue('photoUrl');
+  Logger.log('เพิ่มคอลัมน์ photoUrl ที่ column ' + newCol + ' เรียบร้อย');
+}
+
 /* ==================================================================
  * PART 1 — PUBLIC API: หน้าหลัก (user)
  * ================================================================== */
 
-/** คืนรายชื่อ user ทั้งหมดจาก Sheet "Users" สำหรับ dropdown เลือก user */
+/** คืนรายชื่อ user ทั้งหมดจาก Sheet "Users" สำหรับ dropdown เลือก user (รวม photoUrl) */
 function getUsersList() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
   if (!sheet) {
@@ -103,14 +136,15 @@ function getUsersList() {
     users.push({
       userId: String(data[i][0]),
       name: String(data[i][1] || ''),
-      department: String(data[i][2] || '')
+      department: String(data[i][2] || ''),
+      photoUrl: String(data[i][3] || '') // คอลัมน์ D — ว่างได้ ฝั่ง client จะ fallback เป็น avatar ตัวอักษร
     });
   }
   return users;
 }
 
 /**
- * คืนข้อมูลสรุปของ user คนหนึ่ง: ชื่อ, หน่วยงาน, growupLevel (approvedXp/pendingXp/level/badge
+ * คืนข้อมูลสรุปของ user คนหนึ่ง: ชื่อ, หน่วยงาน, photoUrl, growupLevel (approvedXp/pendingXp/level/badge
  * ภาพรวมทุก skill), specialList (approvedXp/pendingXp/level แยกตาม skill คนละก้อน),
  * และรายการที่ส่งผลทั้งหมด — level/badge นับจาก approved เท่านั้น, submitted แสดงเป็น pendingXp
  * (ไม่กระทบ level), rejected ไม่นับทั้งคู่แต่เก็บประวัติไว้
@@ -187,6 +221,7 @@ function getUserState(userId) {
       userId: user.userId,
       name: user.name,
       department: user.department,
+      photoUrl: user.photoUrl,
       growupLevel: growupLevel,
       specialList: specialList,
       submissions: submissions
@@ -290,7 +325,7 @@ function getConfigOptions() {
 }
 
 /**
- * คืนรายการ status=submitted ของทุก user (join กับ Sheet Users เพื่อได้ชื่อ/หน่วยงาน)
+ * คืนรายการ status=submitted ของทุก user (join กับ Sheet Users เพื่อได้ชื่อ/หน่วยงาน/รูปโปรไฟล์)
  * เรียงจากเก่าไปใหม่ (คิวประมวลผล — รายการที่รอนานที่สุดอยู่บนสุด)
  * เรียกใหม่ทุกครั้งที่ client สลับเข้า view Admin เพื่อให้เห็นข้อมูลล่าสุด
  */
@@ -327,6 +362,7 @@ function getPendingSubmissions() {
     var user = userMap[obj.userId];
     obj.userName = user ? user.name : '(ไม่พบ user: ' + obj.userId + ')';
     obj.department = user ? user.department : '-';
+    obj.userPhotoUrl = user ? user.photoUrl : '';
     obj.previewUrl = getPreviewUrlFromDriveUrl_(obj.fileUrl);
 
     list.push(obj);
@@ -422,6 +458,7 @@ function searchUsers(query) {
       userId: user.userId,
       name: user.name,
       department: user.department,
+      photoUrl: user.photoUrl,
       growupLevel: {
         level: growupInfo.level,
         badge: getBadge_(growupInfo.level)
@@ -529,11 +566,8 @@ function saveToDrive_(blob) {
   var file = folder.createFile(blob);
 
   try {
-    // ให้คนในองค์กรที่มีลิงก์ดูไฟล์ได้ (จำเป็นสำหรับ embed iframe preview ในหน้า Admin)
     file.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
   } catch (e) {
-    // บางบัญชี (เช่น Gmail ส่วนตัวที่ไม่มี domain) อาจตั้งค่านี้ไม่ได้ — ไม่ throw ปล่อยให้ fallback
-    // เป็นลิงก์เปิดไฟล์แท็บใหม่ตามสิทธิ์ Drive ปกติแทน (ดู getPreviewUrlFromDriveUrl_)
     Logger.log('ไม่สามารถตั้งค่า sharing อัตโนมัติได้: ' + e.message);
   }
 
@@ -609,7 +643,7 @@ function callAiGateway_(ocrText) {
     'คุณคือผู้ช่วยวิเคราะห์ทักษะจากข้อความที่ได้ โดยวิเคราะห์หาว่าเป็นทักษะด้านใดใน 3 ทักษะนี้ ' +
     '1.IT 2.บริหาร 3.ทั่วไป และวิเคราะห์ว่าเป็นทักษะระดับใด 1.มหาวิทยาลัย 2.ประเทศ 3.นานาชาติ ' +
     'ตอบกลับเป็น JSON ที่ถูกต้องเท่านั้น รูปแบบ {"skill":"...","level":"..."} ' +
-    'โดย skill ต้องเป็นหนึ่งใน "IT", "บริหาร", "ทั่วไป" เท่านั้น ' +
+    'โดย skill ต้องเป็นหนึ่งใน "IT", "บริหาร", "ทั่วไป", "วิทยากร" เท่านั้น ' +
     'และ level ต้องเป็นหนึ่งใน "มหาวิทยาลัย", "ประเทศ", "นานาชาติ" เท่านั้น ' +
     'ห้ามมีข้อความอื่นนอกเหนือจาก JSON ห้ามเติมคำอธิบายหรือ markdown code block';
 
