@@ -1,6 +1,6 @@
 /**
  * ==================================================================
- * NextTalent Prototype — Part 1 (Google Apps Script)
+ * NextTalent Prototype — Part 1 + Part 2 (Google Apps Script)
  * Entry point เดียวของ Web App — single-page app ตั้งแต่แรก
  * เสิร์ฟ App.html ไฟล์เดียวเสมอ การสลับ view (หน้าหลัก/Admin/ค้นหา)
  * ทำด้วย JS ฝั่ง client ทั้งหมด — ไม่มี doPost()
@@ -17,10 +17,6 @@ function doGet() {
  * SETUP — รันครั้งเดียวก่อนใช้งานจริง
  * ================================================================== */
 
-/**
- * รันครั้งเดียวก่อนใช้งาน — สร้าง Sheet Users / Submissions / Config พร้อม header
- * ไม่เขียนทับถ้ามี Sheet นั้นอยู่แล้ว (เช็คแค่ชื่อ Sheet ไม่เช็คข้อมูลข้างใน)
- */
 function setupSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -51,15 +47,9 @@ function setupSheet() {
   Logger.log('setupSheet() เสร็จสิ้น: Users / Submissions / Config พร้อมใช้งาน');
 }
 
-/**
- * รันครั้งเดียวหลัง setupSheet() — ใส่ค่า default ลง Config และ user ตัวอย่างลง Users
- * เช็คว่า Sheet มีข้อมูลอยู่แล้วหรือยัง (getLastRow() <= 1 คือมีแค่ header)
- * ถ้ามีข้อมูลแล้วจะไม่เขียนทับ
- */
 function setupSeedData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // --- seed Users ---
   var usersSheet = ss.getSheetByName('Users');
   if (!usersSheet) {
     throw new Error('ไม่พบ Sheet "Users" — กรุณารัน setupSheet() ก่อน');
@@ -72,7 +62,6 @@ function setupSeedData() {
     ]);
   }
 
-  // --- seed Config ---
   var configSheet = ss.getSheetByName('Config');
   if (!configSheet) {
     throw new Error('ไม่พบ Sheet "Config" — กรุณารัน setupSheet() ก่อน');
@@ -97,7 +86,7 @@ function setupSeedData() {
 }
 
 /* ==================================================================
- * PUBLIC API — ฟังก์ชันที่ client เรียกผ่าน google.script.run
+ * PART 1 — PUBLIC API: หน้าหลัก (user)
  * ================================================================== */
 
 /** คืนรายชื่อ user ทั้งหมดจาก Sheet "Users" สำหรับ dropdown เลือก user */
@@ -111,19 +100,20 @@ function getUsersList() {
   var users = [];
   for (var i = 1; i < data.length; i++) {
     if (!data[i][0]) continue;
-    users.push({ userId: data[i][0], name: data[i][1], department: data[i][2] });
+    users.push({
+      userId: String(data[i][0]),
+      name: String(data[i][1] || ''),
+      department: String(data[i][2] || '')
+    });
   }
   return users;
 }
 
 /**
- * คืนข้อมูลสรุปของ user คนหนึ่ง: ชื่อ, หน่วยงาน, growupLevel (XP/level/badge ภาพรวมทุก skill),
- * specialList (XP/level แยกตาม skill/rarity คนละก้อน), และรายการที่ส่งผลทั้งหมด
- * ใช้แสดงการ์ดข้อมูล user และรายการรออนุมัติในหน้า UI
- */
-/**
- * คืนข้อมูลสรุปของ user คนหนึ่ง — ครอบด้วย try/catch เพื่อให้ error จริงโผล่ไปที่
- * failureHandler ฝั่ง client แทนที่จะ silent-fail กลายเป็น null
+ * คืนข้อมูลสรุปของ user คนหนึ่ง: ชื่อ, หน่วยงาน, growupLevel (approvedXp/pendingXp/level/badge
+ * ภาพรวมทุก skill), specialList (approvedXp/pendingXp/level แยกตาม skill คนละก้อน),
+ * และรายการที่ส่งผลทั้งหมด — level/badge นับจาก approved เท่านั้น, submitted แสดงเป็น pendingXp
+ * (ไม่กระทบ level), rejected ไม่นับทั้งคู่แต่เก็บประวัติไว้
  */
 function getUserState(userId) {
   if (!userId) {
@@ -139,6 +129,17 @@ function getUserState(userId) {
     var submissions = getSubmissionsByUser_(userId);
     var config = loadConfig_();
 
+    if (!config.curve || config.curve.base === undefined || config.curve.exponent === undefined) {
+      throw new Error('Config sheet ไม่มีค่า curve.base / curve.exponent ครบ — ตรวจสอบ Sheet "Config"');
+    }
+    if (!config.specialCurve || config.specialCurve.base === undefined || config.specialCurve.exponent === undefined) {
+      throw new Error('Config sheet ไม่มีค่า specialCurve.base / specialCurve.exponent ครบ — ตรวจสอบ Sheet "Config"');
+    }
+    if (!config.rarity || Object.keys(config.rarity).length === 0) {
+      throw new Error('Config sheet ไม่มีค่า rarity เลย — ตรวจสอบ Sheet "Config"');
+    }
+
+    // --- growupLevel: รวม XP ทุก skill เข้าด้วยกันเป็นก้อนเดียว ---
     var overallApprovedXp = submissions
       .filter(function (s) { return s.status === 'approved'; })
       .reduce(function (sum, s) { return sum + Number(s.xp || 0); }, 0);
@@ -158,6 +159,7 @@ function getUserState(userId) {
       badge: getBadge_(growupLevelInfo.level)
     };
 
+    // --- specialList: แยก XP/level เป็นก้อนอิสระต่อ skill (IT / บริหาร / ทั่วไป) ---
     var skillNames = Object.keys(config.rarity);
     var specialList = skillNames.map(function (skill) {
       var approvedXp = submissions
@@ -190,16 +192,16 @@ function getUserState(userId) {
       submissions: submissions
     };
 
-    // ทดสอบ serialize ก่อนส่งกลับจริง — ถ้าพังจะ throw ตรงนี้เลย เห็น error ชัดเจน
-    JSON.stringify(result);
+    JSON.stringify(result); // บังคับให้ error ถ้า serialize ไม่ได้ (ป้องกัน silent-null)
 
     return result;
 
   } catch (err) {
-    Logger.log('getUserState() error: ' + err.message + '\n' + err.stack);
+    Logger.log('getUserState() error: ' + err.message + '\n' + (err.stack || ''));
     throw new Error('getUserState ล้มเหลว: ' + err.message);
   }
 }
+
 /**
  * ขั้นตอนหลัก: เซฟไฟล์ลง Drive -> OCR ผ่าน n8n -> วิเคราะห์ทักษะผ่าน AI Gateway -> คำนวณ XP
  * คืนค่าผลลัพธ์ให้ client แสดงเป็นคะแนนชั่วคราว (ยังไม่ insert ลง Sheet Submissions)
@@ -224,7 +226,11 @@ function analyzeCertificate(fileBase64, fileName, mimeType) {
   var baseXp = config.level[aiResult.level];
 
   if (rarity === undefined || baseXp === undefined) {
-    throw new Error('ไม่พบค่า rarity/baseXP ของ skill="' + aiResult.skill + '" level="' + aiResult.level + '" ใน Config sheet');
+    throw new Error(
+      'ไม่พบค่า rarity/baseXP ของ skill="' + aiResult.skill + '" level="' + aiResult.level +
+      '" ใน Config sheet (skill ที่มี: ' + Object.keys(config.rarity).join(', ') +
+      ' / level ที่มี: ' + Object.keys(config.level).join(', ') + ')'
+    );
   }
 
   return {
@@ -232,14 +238,13 @@ function analyzeCertificate(fileBase64, fileName, mimeType) {
     ocrText: extractedText,
     skill: aiResult.skill,
     level: aiResult.level,
-    rarity: rarity,
-    xp: baseXp * rarity
+    rarity: Number(rarity),
+    xp: Number(baseXp) * Number(rarity)
   };
 }
 
 /**
  * บันทึกผลที่ user กด "ส่งผล" ลง Sheet "Submissions" (status = submitted)
- * รับผลลัพธ์ที่ได้จาก analyzeCertificate() กลับมาจาก client (ยังไม่เคยเซฟมาก่อน)
  * คืนค่า getUserState() ล่าสุด เพื่อให้ client รีเฟรช XP/level/badge/รายการได้ทันที
  */
 function submitResult(userId, result) {
@@ -263,8 +268,8 @@ function submitResult(userId, result) {
     result.ocrText || '',
     result.skill,
     result.level,
-    result.rarity,
-    result.xp,
+    Number(result.rarity) || 1,
+    Number(result.xp) || 0,
     'submitted'
   ]);
 
@@ -272,13 +277,174 @@ function submitResult(userId, result) {
 }
 
 /* ==================================================================
+ * PART 2 — PUBLIC API: หน้า Admin
+ * ================================================================== */
+
+/** คืนตัวเลือก skill/level สำหรับ dropdown ในหน้า Admin (แก้ไขก่อนอนุมัติ) — ดึงจาก Config sheet จริง */
+function getConfigOptions() {
+  var config = loadConfig_();
+  return {
+    skills: Object.keys(config.rarity),
+    levels: Object.keys(config.level)
+  };
+}
+
+/**
+ * คืนรายการ status=submitted ของทุก user (join กับ Sheet Users เพื่อได้ชื่อ/หน่วยงาน)
+ * เรียงจากเก่าไปใหม่ (คิวประมวลผล — รายการที่รอนานที่สุดอยู่บนสุด)
+ * เรียกใหม่ทุกครั้งที่ client สลับเข้า view Admin เพื่อให้เห็นข้อมูลล่าสุด
+ */
+function getPendingSubmissions() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
+  if (!sheet) {
+    throw new Error('ไม่พบ Sheet "Submissions" — กรุณารัน setupSheet() ก่อน');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+
+  var userMap = {};
+  getUsersList().forEach(function (u) { userMap[u.userId] = u; });
+
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    var obj = {};
+    headers.forEach(function (h, idx) { obj[h] = data[i][idx]; });
+
+    if (String(obj.status) !== 'submitted') continue;
+
+    obj.id = String(obj.id || '');
+    obj.timestamp = (obj.timestamp instanceof Date) ? obj.timestamp.toISOString() : String(obj.timestamp || '');
+    obj.userId = String(obj.userId || '');
+    obj.fileUrl = String(obj.fileUrl || '');
+    obj.ocrText = String(obj.ocrText || '');
+    obj.skill = String(obj.skill || '');
+    obj.level = String(obj.level || '');
+    obj.rarity = Number(obj.rarity) || 1;
+    obj.xp = Number(obj.xp) || 0;
+    obj.status = String(obj.status || '');
+
+    var user = userMap[obj.userId];
+    obj.userName = user ? user.name : '(ไม่พบ user: ' + obj.userId + ')';
+    obj.department = user ? user.department : '-';
+    obj.previewUrl = getPreviewUrlFromDriveUrl_(obj.fileUrl);
+
+    list.push(obj);
+  }
+
+  list.sort(function (a, b) { return new Date(a.timestamp) - new Date(b.timestamp); });
+  return list;
+}
+
+/**
+ * แก้ไข skill/level ของรายการที่ยังรออนุมัติ (ก่อนกดอนุมัติจริง) — เปิดจาก modal ในหน้า Admin
+ * คำนวณ rarity/xp ใหม่โดยอัตโนมัติจาก Config sheet ตาม skill/level ที่แก้ (ไม่ให้กรอก xp เอง)
+ * status ไม่เปลี่ยน (ยังเป็น submitted) — ต้องกด "อนุมัติ" แยกทีหลังจึงมีผลกับ level จริง
+ */
+function updateSubmission(id, skill, level) {
+  if (!id) throw new Error('ไม่พบ id ของรายการ');
+  if (!skill || !level) throw new Error('กรุณาระบุ skill และ level ให้ครบ');
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
+  if (!sheet) throw new Error('ไม่พบ Sheet "Submissions" — กรุณารัน setupSheet() ก่อน');
+
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var rowIndex = findSubmissionRowIndex_(sheet, id);
+  if (rowIndex === -1) throw new Error('ไม่พบรายการ id=' + id);
+
+  var config = loadConfig_();
+  var rarity = config.rarity[skill];
+  var baseXp = config.level[level];
+  if (rarity === undefined || baseXp === undefined) {
+    throw new Error(
+      'ไม่พบค่า rarity/baseXP ของ skill="' + skill + '" level="' + level + '" ใน Config sheet'
+    );
+  }
+  var xp = Number(baseXp) * Number(rarity);
+
+  var skillCol = headers.indexOf('skill') + 1;
+  var levelCol = headers.indexOf('level') + 1;
+  var rarityCol = headers.indexOf('rarity') + 1;
+  var xpCol = headers.indexOf('xp') + 1;
+
+  sheet.getRange(rowIndex, skillCol).setValue(skill);
+  sheet.getRange(rowIndex, levelCol).setValue(level);
+  sheet.getRange(rowIndex, rarityCol).setValue(rarity);
+  sheet.getRange(rowIndex, xpCol).setValue(xp);
+
+  return getPendingSubmissions();
+}
+
+/** อนุมัติรายการ — เปลี่ยน status เป็น approved (มีผลกับ level/badge ทันทีที่ getUserState ครั้งถัดไป) */
+function approveSubmission(id) {
+  return setSubmissionStatus_(id, 'approved');
+}
+
+/** ปฏิเสธรายการ — เปลี่ยน status เป็น rejected (ไม่ลบแถว เก็บประวัติไว้) */
+function rejectSubmission(id) {
+  return setSubmissionStatus_(id, 'rejected');
+}
+
+/* ==================================================================
+ * PART 2 — PUBLIC API: หน้าค้นหา
+ * ================================================================== */
+
+/**
+ * ค้นหา user จากชื่อ หรือชื่อทักษะใน specialList (IT / บริหาร / ทั่วไป)
+ * skill ที่ใช้ค้นหาและ tag ที่แสดงนับจากรายการ approved เท่านั้น (approvedXp > 0)
+ * query ว่าง = คืน user ทั้งหมด (ใช้ตอนเปิดหน้าค้นหาครั้งแรกก่อนพิมพ์อะไร)
+ */
+function searchUsers(query) {
+  query = String(query || '').trim();
+  var normalizedQuery = query.toLowerCase();
+
+  var users = getUsersList();
+  var config = loadConfig_();
+  var skillNames = Object.keys(config.rarity);
+
+  var results = users.map(function (user) {
+    var submissions = getSubmissionsByUser_(user.userId);
+
+    var approvedXp = submissions
+      .filter(function (s) { return s.status === 'approved'; })
+      .reduce(function (sum, s) { return sum + Number(s.xp || 0); }, 0);
+
+    var growupInfo = calcLevelFromXp_(approvedXp, config.curve.base, config.curve.exponent);
+
+    var skillTags = skillNames.filter(function (skill) {
+      var xp = submissions
+        .filter(function (s) { return s.status === 'approved' && s.skill === skill; })
+        .reduce(function (sum, s) { return sum + Number(s.xp || 0); }, 0);
+      return xp > 0;
+    });
+
+    return {
+      userId: user.userId,
+      name: user.name,
+      department: user.department,
+      growupLevel: {
+        level: growupInfo.level,
+        badge: getBadge_(growupInfo.level)
+      },
+      skillTags: skillTags
+    };
+  });
+
+  if (!normalizedQuery) return results;
+
+  return results.filter(function (r) {
+    var nameMatch = r.name.toLowerCase().indexOf(normalizedQuery) !== -1;
+    var skillMatch = r.skillTags.some(function (skill) {
+      return skill.toLowerCase().indexOf(normalizedQuery) !== -1;
+    });
+    return nameMatch || skillMatch;
+  });
+}
+
+/* ==================================================================
  * INTERNAL HELPERS — ฟังก์ชันภายใน (ไม่เรียกจาก client)
  * ================================================================== */
 
-/** ดึงรายการ submissions ของ user คนหนึ่งจาก Sheet "Submissions" เรียงล่าสุดก่อน */
-/** ดึงรายการ submissions ของ user คนหนึ่งจาก Sheet "Submissions" เรียงล่าสุดก่อน
- *  sanitize ค่าทุกฟิลด์ให้ปลอดภัยต่อการ serialize กลับไป client (กัน NaN/undefined/Date แปลกๆ)
- */
 function getSubmissionsByUser_(userId) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
   if (!sheet) {
@@ -289,44 +455,89 @@ function getSubmissionsByUser_(userId) {
   var headers = data[0];
   var userIdCol = headers.indexOf('userId');
 
+  if (userIdCol === -1) {
+    throw new Error('Sheet "Submissions" ไม่มีคอลัมน์ "userId" — ตรวจสอบ header row');
+  }
+
   return data
     .slice(1)
-    .filter(function (row) { return row[userIdCol] === userId; })
+    .filter(function (row) { return String(row[userIdCol]) === String(userId); })
     .map(function (row) {
       var obj = {};
       headers.forEach(function (h, i) { obj[h] = row[i]; });
 
-      // --- sanitize: กันค่าที่ทำให้ JSON serialize พังหรือคำนวณเพี้ยน ---
-      obj.timestamp = obj.timestamp instanceof Date
+      obj.id = String(obj.id || '');
+      obj.timestamp = (obj.timestamp instanceof Date)
         ? obj.timestamp.toISOString()
-        : String(obj.timestamp || '');
-
-      obj.xp = Number(obj.xp);
-      if (isNaN(obj.xp)) obj.xp = 0;
+        : (obj.timestamp ? String(obj.timestamp) : new Date().toISOString());
+      obj.userId = String(obj.userId || '');
+      obj.fileUrl = String(obj.fileUrl || '');
+      obj.ocrText = String(obj.ocrText || '');
+      obj.skill = String(obj.skill || '');
+      obj.level = String(obj.level || '');
 
       obj.rarity = Number(obj.rarity);
       if (isNaN(obj.rarity)) obj.rarity = 1;
 
-      obj.skill = String(obj.skill || '');
-      obj.level = String(obj.level || '');
+      obj.xp = Number(obj.xp);
+      if (isNaN(obj.xp)) obj.xp = 0;
+
       obj.status = String(obj.status || 'submitted');
-      obj.fileUrl = String(obj.fileUrl || '');
-      obj.ocrText = String(obj.ocrText || '');
-      obj.id = String(obj.id || '');
 
       return obj;
     })
     .sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
 }
 
+/** หา row number (1-based, ตรงกับ getRange จริง) ของ submission ตาม id — คืน -1 ถ้าไม่พบ */
+function findSubmissionRowIndex_(sheet, id) {
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var idCol = headers.indexOf('id');
+  if (idCol === -1) return -1;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]) === String(id)) return i + 1;
+  }
+  return -1;
+}
+
+/** ใช้ร่วมโดย approveSubmission/rejectSubmission เพื่อตั้งค่า status ของแถวใดแถวหนึ่ง */
+function setSubmissionStatus_(id, status) {
+  if (!id) throw new Error('ไม่พบ id ของรายการ');
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
+  if (!sheet) throw new Error('ไม่พบ Sheet "Submissions" — กรุณารัน setupSheet() ก่อน');
+
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var rowIndex = findSubmissionRowIndex_(sheet, id);
+  if (rowIndex === -1) throw new Error('ไม่พบรายการ id=' + id);
+
+  var statusCol = headers.indexOf('status') + 1;
+  sheet.getRange(rowIndex, statusCol).setValue(status);
+
+  return getPendingSubmissions();
+}
+
 function generateId_() {
   return 'sub_' + Utilities.getUuid();
 }
 
-/** เซฟไฟล์ PDF ลง Google Drive คืนค่าเป็นลิงก์ไฟล์ */
+/** เซฟไฟล์ PDF ลง Google Drive คืนค่าเป็นลิงก์ไฟล์ — ลองตั้ง sharing ให้ดู preview ได้ในองค์กร */
 function saveToDrive_(blob) {
   var folder = getOrCreateUploadFolder_();
-  return folder.createFile(blob).getUrl();
+  var file = folder.createFile(blob);
+
+  try {
+    // ให้คนในองค์กรที่มีลิงก์ดูไฟล์ได้ (จำเป็นสำหรับ embed iframe preview ในหน้า Admin)
+    file.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (e) {
+    // บางบัญชี (เช่น Gmail ส่วนตัวที่ไม่มี domain) อาจตั้งค่านี้ไม่ได้ — ไม่ throw ปล่อยให้ fallback
+    // เป็นลิงก์เปิดไฟล์แท็บใหม่ตามสิทธิ์ Drive ปกติแทน (ดู getPreviewUrlFromDriveUrl_)
+    Logger.log('ไม่สามารถตั้งค่า sharing อัตโนมัติได้: ' + e.message);
+  }
+
+  return file.getUrl();
 }
 
 function getOrCreateUploadFolder_() {
@@ -335,11 +546,18 @@ function getOrCreateUploadFolder_() {
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
 }
 
+/** แปลงลิงก์ Drive แบบ view (.../file/d/ID/view) เป็นลิงก์ preview สำหรับฝัง iframe */
+function getPreviewUrlFromDriveUrl_(fileUrl) {
+  if (!fileUrl) return '';
+  var match = fileUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) return '';
+  return 'https://drive.google.com/file/d/' + match[1] + '/preview';
+}
+
 /**
  * ส่งไฟล์ PDF เข้า n8n webhook เพื่อถอดข้อความ (OCR)
  * Request: multipart/form-data, field name "file"
  * Response ที่คาดไว้: JSON { "status": "...", "extracted_text": "..." }
- * Response อาจไม่ใช่ JSON เสมอไป (error จาก n8n) — parse แบบ try/catch แล้ว fallback แสดง raw text
  */
 function callOcrWebhook_(fileBlob) {
   var url = PropertiesService.getScriptProperties().getProperty('OCR_WEBHOOK_URL');
@@ -349,7 +567,7 @@ function callOcrWebhook_(fileBlob) {
 
   var options = {
     method: 'post',
-    payload: { file: fileBlob }, // UrlFetchApp ส่งเป็น multipart/form-data อัตโนมัติเมื่อ payload มี Blob
+    payload: { file: fileBlob },
     muteHttpExceptions: true
   };
 
@@ -358,7 +576,7 @@ function callOcrWebhook_(fileBlob) {
   var rawText = response.getContentText();
 
   var parsed = null;
-  try { parsed = JSON.parse(rawText); } catch (e) { /* ไม่ใช่ JSON — ปล่อย parsed = null เพื่อ fallback แสดง raw text */ }
+  try { parsed = JSON.parse(rawText); } catch (e) { /* ไม่ใช่ JSON — fallback แสดง raw text */ }
 
   if (status < 200 || status >= 300) {
     throw new Error('OCR webhook ตอบกลับ HTTP ' + status + ': ' + rawText);
@@ -389,8 +607,11 @@ function callAiGateway_(ocrText) {
 
   var systemPrompt =
     'คุณคือผู้ช่วยวิเคราะห์ทักษะจากข้อความที่ได้ โดยวิเคราะห์หาว่าเป็นทักษะด้านใดใน 3 ทักษะนี้ ' +
-    '1.IT 2.บริหาร 3.ทั่วไป และวิเคราะห์ว่าเป็นทักษะระดับใด 1.มหาวิทยาลัย 2.ระดับประเทศ 3.นานาชาติ ' +
-    'ตอบกลับเป็น JSON ที่ถูกต้องเท่านั้น รูปแบบ {"skill":"...","level":"..."} ห้ามมีข้อความอื่นนอกเหนือจาก JSON';
+    '1.IT 2.บริหาร 3.ทั่วไป และวิเคราะห์ว่าเป็นทักษะระดับใด 1.มหาวิทยาลัย 2.ประเทศ 3.นานาชาติ ' +
+    'ตอบกลับเป็น JSON ที่ถูกต้องเท่านั้น รูปแบบ {"skill":"...","level":"..."} ' +
+    'โดย skill ต้องเป็นหนึ่งใน "IT", "บริหาร", "ทั่วไป" เท่านั้น ' +
+    'และ level ต้องเป็นหนึ่งใน "มหาวิทยาลัย", "ประเทศ", "นานาชาติ" เท่านั้น ' +
+    'ห้ามมีข้อความอื่นนอกเหนือจาก JSON ห้ามเติมคำอธิบายหรือ markdown code block';
 
   var payload = {
     model: 'deepseek-v4-pro',
@@ -427,15 +648,21 @@ function callAiGateway_(ocrText) {
     throw new Error('AI Gateway ไม่มีข้อความตอบกลับที่ใช้งานได้: ' + rawText);
   }
 
+  var cleanContent = content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
   var result;
-  try { result = JSON.parse(content); } catch (e) {
+  try { result = JSON.parse(cleanContent); } catch (e) {
     throw new Error('AI วิเคราะห์ทักษะตอบกลับไม่ใช่ JSON ที่ parse ได้: ' + content);
   }
 
   if (!result.skill || !result.level) {
     throw new Error('AI วิเคราะห์ทักษะตอบกลับไม่ครบ skill/level: ' + content);
   }
-  return result;
+
+  return {
+    skill: String(result.skill).trim(),
+    level: String(result.level).trim()
+  };
 }
 
 /** โหลดค่า baseXP (ตาม level), rarity (ตาม skill), curve (growupLevel) และ specialCurve (specialList) จาก Sheet "Config" */
@@ -449,11 +676,12 @@ function loadConfig_() {
   var config = { level: {}, rarity: {}, curve: {}, specialCurve: {} };
 
   for (var i = 1; i < data.length; i++) {
-    var category = data[i][0];
-    var key = data[i][1];
+    var category = String(data[i][0] || '').trim();
+    var key = String(data[i][1] || '').trim();
     var value = data[i][2];
+    if (!category || !key) continue;
     if (config[category] !== undefined) {
-      config[category][key] = value;
+      config[category][key] = Number(value);
     }
   }
   return config;
@@ -461,12 +689,14 @@ function loadConfig_() {
 
 /** คำนวณ level และ XP ที่เข้า/ต้องการของ level ปัจจุบัน จาก XP รวม ตามสูตร base × N^exponent */
 function calcLevelFromXp_(totalXp, base, exponent) {
-  base = base || 100;
-  exponent = exponent || 1.5;
+  base = Number(base) || 100;
+  exponent = Number(exponent) || 1.5;
+  totalXp = Number(totalXp) || 0;
 
   var level = 1;
   while (xpRequiredForLevel_(level + 1, base, exponent) <= totalXp) {
     level++;
+    if (level > 1000) break;
   }
 
   var xpForCurrentLevel = xpRequiredForLevel_(level, base, exponent);
@@ -484,10 +714,27 @@ function xpRequiredForLevel_(level, base, exponent) {
   return Math.round(base * Math.pow(level, exponent));
 }
 
-/** คืนชื่อ badge ตาม level: 1-4 Rookie, 5-9 Rising Star, 10-19 Expert, 20+ Master (ฝั่ง client วาดเป็น SVG เอง ดู BADGE_TIERS) */
+/** คืนชื่อ badge ตาม level: 1-4 Rookie, 5-9 Rising Star, 10-19 Expert, 20+ Master */
 function getBadge_(level) {
   if (level >= 20) return { name: 'Master' };
   if (level >= 10) return { name: 'Expert' };
   if (level >= 5) return { name: 'Rising Star' };
   return { name: 'Rookie' };
+}
+
+/* ==================================================================
+ * DEBUG HELPERS — ใช้ทดสอบระหว่างพัฒนา รันจาก Apps Script Editor เท่านั้น
+ * ================================================================== */
+
+function debugLoadConfig_() {
+  Logger.log(JSON.stringify(loadConfig_(), null, 2));
+}
+
+function debugGetSubmissions_() {
+  var userId = 'u001';
+  Logger.log(JSON.stringify(getSubmissionsByUser_(userId), null, 2));
+}
+
+function debugGetPending_() {
+  Logger.log(JSON.stringify(getPendingSubmissions(), null, 2));
 }

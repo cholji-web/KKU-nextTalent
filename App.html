@@ -18,7 +18,7 @@
       color: #292524;
       min-height: 100vh;
     }
-    .container { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; }
+    .container { max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; }
     .view { display: none; }
     .view.active { display: block; }
 
@@ -38,12 +38,11 @@
     nav.topnav .nav-links button:hover { background: rgba(255,255,255,0.32); }
     nav.topnav .nav-links button.active-nav { background: rgba(255,255,255,0.4); }
 
-    h3, h4 { color: #9a3412; }
+    h2, h3, h4 { color: #9a3412; }
     hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
     label { font-weight: 600; color: #78350f; }
 
-    select, input[type="file"] {
+    select, input[type="file"], input[type="text"] {
       font-size: 0.95rem; padding: 8px 12px; border-radius: 8px;
       border: 1px solid var(--border); background: #fff;
     }
@@ -55,10 +54,18 @@
     button:hover { background: #c2410c; }
     button:disabled { background: #d6d3d1; cursor: not-allowed; }
 
+    .error-box {
+      background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;
+      border-radius: 8px; padding: 10px 12px; font-size: 0.85rem;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
+    /* ---------- หน้าหลัก ---------- */
     #userCard {
       background: #fff; border: 1px solid var(--border); border-radius: 10px;
       padding: 14px 16px; margin: 12px 0;
       box-shadow: 0 2px 6px rgba(234,88,12,0.08);
+      min-height: 24px;
     }
     #userCard h3 { margin: 0 0 6px; }
     #userCard p { margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -74,6 +81,89 @@
       display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
     }
     #submissionsList p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .badge-shelf { display: flex; gap: 16px; margin: 16px 0; flex-wrap: wrap; }
+    .badge-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; }
+    .badge-slot svg { width: 48px; height: 48px; }
+    .badge-slot .badge-label { font-size: 0.7rem; text-align: center; color: var(--text-muted); }
+    .badge-icon.locked path { fill: #e7e5e4; }
+    .badge-icon.unlocked path { fill: var(--badge-color); }
+    .pending-xp { color: var(--primary); font-weight: 600; font-size: 0.85rem; }
+    .special-list { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+    .special-block { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px 12px; }
+    .special-header { font-size: 0.875rem; margin-bottom: 6px; }
+    .special-block .badge-shelf { gap: 10px; margin: 6px 0 0; }
+    .special-block .badge-slot { width: 56px; }
+    .special-block .badge-slot svg { width: 32px; height: 32px; }
+
+    /* ---------- หน้า Admin ---------- */
+    .pending-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 14px; margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .pending-info { font-size: 0.9rem; line-height: 1.5; }
+    .pending-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-approve { background: #16a34a; }
+    .btn-approve:hover { background: #15803d; }
+    .btn-reject { background: #dc2626; }
+    .btn-reject:hover { background: #b91c1c; }
+    .btn-view { background: #78716c; }
+    .btn-view:hover { background: #57534e; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 2000;
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-box {
+      background: #fff; border-radius: 12px; padding: 20px;
+      max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .modal-box h3 { margin-top: 0; }
+    .modal-box label { display: block; margin: 10px 0 4px; }
+    .modal-box select { width: 100%; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .modal-actions button { flex: 1; }
+
+    /* ---------- หน้าค้นหา ---------- */
+    .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .search-bar input { flex: 1; }
+    .search-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(234,88,12,0.06);
+    }
+    .search-card h4 { margin: 0 0 6px; }
+    .search-card h4 small { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; }
+    .skill-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .skill-tag {
+      background: #ffedd5; color: #9a3412; font-size: 0.75rem; font-weight: 600;
+      padding: 3px 10px; border-radius: 999px; border: 1px solid #fed7aa;
+    }
+    .skill-tag-empty { background: #f5f5f4; color: var(--text-muted); border-color: #e7e5e4; }
+
+    /* ---------- XP popup ---------- */
+    .xp-popup {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #fff; font-weight: 800; font-size: 2rem;
+      padding: 20px 36px; border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(234,88,12,0.4);
+      opacity: 0; pointer-events: none; z-index: 3000;
+    }
+    .xp-popup.show { animation: xpPopIn 1.6s ease forwards; }
+    @keyframes xpPopIn {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-8deg); }
+      15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(3deg); }
+      30%  { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+      75%  { opacity: 1; transform: translate(-50%, -55%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -70%) scale(0.9); }
+    }
   </style>
 </head>
 <body>
@@ -82,19 +172,18 @@
     <div class="brand">🏆 NextTalent</div>
     <div class="nav-links">
       <button class="active-nav" onclick="switchView('home')">หน้าหลัก</button>
-      <!-- ปุ่ม Admin / ค้นหา จะเพิ่มใน Part 2 (ดู part2.md) -->
+      <button onclick="switchView('admin')">🛠 Admin</button>
+      <button onclick="switchView('search')">🔍 ค้นหา</button>
     </div>
   </nav>
 
-  <!-- ================= VIEW: หน้าหลัก (Part 1) ================= -->
+  <!-- ================= VIEW: หน้าหลัก ================= -->
   <div id="view-home" class="view active container">
 
     <label for="userSelect">เลือก User:</label><br>
     <select id="userSelect"></select>
 
     <div id="userCard"></div>
-
-    <!-- specialList: XP/level/badge shelf แยกตาม skill (IT / บริหาร / ทั่วไป) คนละก้อนจาก growupLevel -->
     <div id="specialList" class="special-list"></div>
 
     <hr>
@@ -109,237 +198,52 @@
 
     <h4>📋 รายการที่ส่งผล</h4>
     <div id="submissionsList"></div>
-
-    <style>
-      .badge-shelf { display: flex; gap: 16px; margin: 16px 0; flex-wrap: wrap; }
-      .badge-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; }
-      .badge-slot svg { width: 48px; height: 48px; }
-      .badge-slot .badge-label { font-size: 0.7rem; text-align: center; color: var(--text-muted); }
-      .badge-icon.locked path { fill: #e7e5e4; }         /* ยังไม่ได้: สีอ่อน */
-      .badge-icon.unlocked path { fill: var(--badge-color); } /* ได้แล้ว: สีสันตามระดับ */
-      .pending-xp { color: var(--primary); font-weight: 600; font-size: 0.85rem; }
-      .special-list { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
-      .special-block { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px 12px; }
-      .special-header { font-size: 0.875rem; margin-bottom: 6px; }
-      .special-block .badge-shelf { gap: 10px; margin: 6px 0 0; }
-      .special-block .badge-slot { width: 56px; }
-      .special-block .badge-slot svg { width: 32px; height: 32px; }
-    </style>
-
-    <script>
-      let currentUserId = null;
-      let pendingResult = null; // ผลลัพธ์ชั่วคราวจาก analyzeCertificate ก่อนกด "ส่งผล"
-
-      // เกณฑ์ badge แต่ละระดับ + สีตอนปลดล็อก (ใช้ SVG แทน emoji)
-      const BADGE_TIERS = [
-        {
-          name: 'Rookie', minLevel: 1, color: '#65a30d',
-          // ไอคอนหน่อไม้ (sprout)
-          path: 'M12 21V10M12 10C12 6 9 4 5 4c0 4 3 7 7 7zM12 10c0-3 2-5 5-5 0 3-2 5-5 5z'
-        },
-        {
-          name: 'Rising Star', minLevel: 5, color: '#f59e0b',
-          // ไอคอนดาว
-          path: 'M12 2l2.9 6.9L22 9.6l-5.5 5.1L18 22l-6-3.6L6 22l1.5-7.3L2 9.6l7.1-0.7L12 2z'
-        },
-        {
-          name: 'Expert', minLevel: 10, color: '#ea580c',
-          // ไอคอนเปลวไฟ
-          path: 'M12 2c-3 4-6 7-6 11a6 6 0 0 0 12 0c0-2-1-3.5-2-5 .5 2-1 3-2 2 .5-2-1-4-2-8z'
-        },
-        {
-          name: 'Master', minLevel: 20, color: '#eab308',
-          // ไอคอนมงกุฎ
-          path: 'M3 8l4 4 5-7 5 7 4-4-2 10H5L3 8z'
-        }
-      ];
-
-      // window.onload ของทั้งไฟล์ App.html โหลด dropdown user ให้ทันทีเมื่อเปิดหน้า (view หน้าหลักเป็น view เริ่มต้น)
-      window.onload = function () {
-        google.script.run
-          .withSuccessHandler(renderUsersDropdown)
-          .withFailureHandler(onHomeError)
-          .getUsersList();
-      };
-
-      function renderUsersDropdown(users) {
-        const select = document.getElementById('userSelect');
-        select.innerHTML = '<option value="">-- เลือก user --</option>' +
-          users.map(u => `<option value="${u.userId}">${u.name} (${u.department})</option>`).join('');
-        select.onchange = () => loadUserState(select.value);
-      }
-
-      function loadUserState(userId) {
-        if (!userId) return;
-        currentUserId = userId;
-        // reset ผลชั่วคราวเมื่อเปลี่ยน user
-        pendingResult = null;
-        document.getElementById('submitBtn').style.display = 'none';
-        document.getElementById('analyzeResult').textContent = '';
-
-        google.script.run
-          .withSuccessHandler(renderUserCard)
-          .withFailureHandler(onHomeError)
-          .getUserState(userId);
-      }
-
-      function renderUserCard(state) {
-        const g = state.growupLevel;
-        const pendingBadge = g.pendingXp > 0
-          ? ` <span class="pending-xp">+${g.pendingXp} XP (รออนุมัติ)</span>`
-          : '';
-        const tier = BADGE_TIERS.find(t => t.name === g.badge.name); // หา icon/สีของ badge ปัจจุบัน (ใบเดียว ไม่ใช่ shelf)
-        const badgeIcon = tier
-          ? `<svg class="badge-icon unlocked" style="--badge-color:${tier.color}" viewBox="0 0 24 24" width="28" height="28"><path d="${tier.path}"/></svg>`
-          : '';
-        document.getElementById('userCard').innerHTML =
-          `<h3>${state.name} — ${state.department}</h3>
-           <p>${badgeIcon} Level ${g.level} (${g.badge.name}) — XP ${g.xpIntoLevel}/${g.xpForNextLevel}${pendingBadge}</p>`;
-        renderSpecialList(state.specialList);
-        renderSubmissions(state.submissions);
-      }
-
-      // วาด badge shelf ครบ 4 ระดับของ 1 skill: ที่ยังไม่ถึง level ใช้สีอ่อน (locked), ที่ถึงแล้วใช้สีของตัวเอง (unlocked)
-      function badgeShelfHtml(level) {
-        return BADGE_TIERS.map(tier => {
-          const unlocked = level >= tier.minLevel;
-          return `
-            <div class="badge-slot">
-              <svg class="badge-icon ${unlocked ? 'unlocked' : 'locked'}"
-                   style="--badge-color:${tier.color}" viewBox="0 0 24 24">
-                <path d="${tier.path}"/>
-              </svg>
-              <span class="badge-label">${tier.name}Lv.${tier.minLevel}+</span>
-            </div>`;
-        }).join('');
-      }
-
-      // specialList: แยก level/XP ต่อ skill (IT / บริหาร / ทั่วไป) เป็นก้อนอิสระจาก growupLevel
-      // แต่ละ skill แสดง badge shelf ครบ 4 ระดับของตัวเอง (locked/unlocked ตาม level ของ skill นั้น)
-      function renderSpecialList(specialList) {
-        document.getElementById('specialList').innerHTML = specialList.map(s => {
-          const pending = s.pendingXp > 0 ? ` <span class="pending-xp">+${s.pendingXp}</span>` : '';
-          return `<div class="special-block">
-            <div class="special-header"><strong>${s.skill}</strong> — Level ${s.level} (XP ${s.xpIntoLevel}/${s.xpForNextLevel})${pending}</div>
-            <div class="badge-shelf">${badgeShelfHtml(s.level)}</div>
-          </div>`;
-        }).join('');
-      }
-
-      function renderSubmissions(submissions) {
-        document.getElementById('submissionsList').innerHTML = submissions
-          .map(s => {
-            const d = s.timestamp ? new Date(s.timestamp).toLocaleDateString('th-TH') : '-';
-            return `<div><span>${d} — ${s.skill} / ${s.level}</span><span>XP ${s.xp} — [${s.status}]</span></div>`;
-          })
-          .join('') || '<p>ยังไม่มีรายการที่ส่งผล</p>';
-      }
-
-      async function analyzeCertificate() {
-        if (!currentUserId) return onHomeError({ message: 'กรุณาเลือก user ก่อน' });
-
-        const fileInput = document.getElementById('pdfFile');
-        if (!fileInput.files.length) return onHomeError({ message: 'เลือกไฟล์ PDF ก่อน' });
-
-        const file = fileInput.files[0];
-        const fileBase64 = await fileToBase64(file);
-        const resultEl = document.getElementById('analyzeResult');
-        resultEl.textContent = '⏳ กำลังวิเคราะห์... (OCR + AI อาจใช้เวลาสักครู่)';
-        document.getElementById('submitBtn').style.display = 'none';
-
-        google.script.run
-          .withSuccessHandler(onAnalyzeSuccess)
-          .withFailureHandler(onHomeError)
-          .analyzeCertificate(fileBase64, file.name, file.type);
-      }
-
-      function onAnalyzeSuccess(result) {
-        pendingResult = result;
-        document.getElementById('analyzeResult').innerHTML =
-          `ทักษะ: ${result.skill}ระดับ: ${result.level}Rarity: x${result.rarity}XP ที่จะได้: ${result.xp}`;
-        document.getElementById('submitBtn').style.display = 'inline-block';
-      }
-
-      function submitResult() {
-        if (!currentUserId || !pendingResult) return;
-        const xpGained = pendingResult.xp;
-
-        google.script.run
-          .withSuccessHandler(function (state) {
-            pendingResult = null;
-            document.getElementById('submitBtn').style.display = 'none';
-            document.getElementById('analyzeResult').textContent = '✅ ส่งผลเรียบร้อย';
-            document.getElementById('pdfFile').value = '';
-            showXpPopup(xpGained);
-            renderUserCard(state);
-          })
-          .withFailureHandler(onHomeError)
-          .submitResult(currentUserId, pendingResult);
-      }
-
-      // แสดง popup แอนิเมชันตัวเลข XP ที่ได้รับ ตอนกด "ส่งผล" สำเร็จ
-      function showXpPopup(xp) {
-        const el = document.getElementById('xpPopup');
-        el.textContent = '+' + xp + ' XP';
-        el.classList.remove('show');
-        void el.offsetWidth; // force reflow เพื่อให้เล่น animation ใหม่ได้ทุกครั้ง
-        el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 1600);
-      }
-
-      // ตั้งชื่อ onHomeError (ไม่ใช่ onError เฉยๆ) เพราะ App.html มี error handler ของ view Admin/ค้นหาแยกต่างหาก (onAdminError, onSearchError)
-      function onHomeError(error) {
-        document.getElementById('analyzeResult').textContent = '❌ ' + error.message;
-      }
-
-      function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]); // ตัด data:...;base64, ออก
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      }
-    </script>
   </div>
-  <!-- ============= END VIEW: หน้าหลัก ============= -->
 
-  <!-- ================= VIEW: Admin (Part 2 — โครงไว้เฉยๆ ยังไม่ทำ ดู part2.md) ================= -->
+  <!-- ================= VIEW: Admin ================= -->
   <div id="view-admin" class="view container">
-    <p>หน้า Admin จะเพิ่มใน Part 2 (ดู part2.md)</p>
+    <h2>🛠 หน้า Admin — รายการรออนุมัติ</h2>
+    <div id="pendingList">กำลังโหลด...</div>
   </div>
 
-  <!-- ================= VIEW: ค้นหา (Part 2 — โครงไว้เฉยๆ ยังไม่ทำ ดู part2.md) ================= -->
+  <!-- ================= VIEW: ค้นหา ================= -->
   <div id="view-search" class="view container">
-    <p>หน้าค้นหาจะเพิ่มใน Part 2 (ดู part2.md)</p>
+    <h2>🔍 ค้นหาบุคลากรตามทักษะ</h2>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="ค้นหาชื่อ หรือทักษะ (IT / บริหาร / ทั่วไป)" oninput="onSearchInput()">
+      <button onclick="performSearch()">ค้นหา</button>
+    </div>
+    <div id="searchResults">กำลังโหลด...</div>
   </div>
 
-  <!-- xpPopup เป็น element ระดับ body ใช้ร่วมกับทุก view -->
+  <!-- ================= MODAL: แก้ไข skill/level + preview ไฟล์ (ใช้ในหน้า Admin) ================= -->
+  <div id="editModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>ตรวจสอบ / แก้ไขรายการ</h3>
+      <div id="modalFilePreview"></div>
+
+      <label for="modalSkillSelect">ทักษะ (skill)</label>
+      <select id="modalSkillSelect"></select>
+
+      <label for="modalLevelSelect">ระดับ (level)</label>
+      <select id="modalLevelSelect"></select>
+
+      <div id="modalEditError"></div>
+
+      <div class="modal-actions">
+        <button onclick="saveModalEdit()">💾 บันทึกการแก้</button>
+        <button class="btn-view" onclick="closeModal()">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- xpPopup ใช้ร่วมกันทุก view -->
   <div id="xpPopup" class="xp-popup"></div>
 
-  <style>
-    .xp-popup {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(0.5);
-      background: linear-gradient(135deg, #f59e0b, #ea580c);
-      color: #fff; font-weight: 800; font-size: 2rem;
-      padding: 20px 36px; border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(234,88,12,0.4);
-      opacity: 0; pointer-events: none; z-index: 1000;
-    }
-    .xp-popup.show { animation: xpPopIn 1.6s ease forwards; }
-    @keyframes xpPopIn {
-      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-8deg); }
-      15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(3deg); }
-      30%  { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-      75%  { opacity: 1; transform: translate(-50%, -55%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -70%) scale(0.9); }
-    }
-  </style>
-
   <script>
-    // สลับ view กลาง ใช้ร่วมกันทั้งไฟล์ App.html (หน้าหลัก / Admin / ค้นหา)
-    // เป็นส่วนกลางที่ Part 2 จะมาต่อยอด (เพิ่มปุ่ม nav ที่เรียก switchView('admin') / switchView('search'))
+    /* ==================================================================
+     * ส่วนกลาง — สลับ view + trigger โหลดข้อมูลใหม่ทุกครั้งที่เข้า view นั้น
+     * ================================================================== */
     function switchView(name) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       const target = document.getElementById('view-' + name);
@@ -349,6 +253,351 @@
       const btn = Array.from(document.querySelectorAll('.nav-links button'))
         .find(b => b.getAttribute('onclick') === `switchView('${name}')`);
       if (btn) btn.classList.add('active-nav');
+
+      if (name === 'admin') loadPendingSubmissions();
+      if (name === 'search') performSearch();
+    }
+
+    // เกณฑ์ badge แต่ละระดับ + สีตอนปลดล็อก — ใช้ร่วมกันทั้งหน้าหลักและหน้าค้นหา
+    const BADGE_TIERS = [
+      {
+        name: 'Rookie', minLevel: 1, color: '#65a30d',
+        path: 'M12 21V10M12 10C12 6 9 4 5 4c0 4 3 7 7 7zM12 10c0-3 2-5 5-5 0 3-2 5-5 5z'
+      },
+      {
+        name: 'Rising Star', minLevel: 5, color: '#f59e0b',
+        path: 'M12 2l2.9 6.9L22 9.6l-5.5 5.1L18 22l-6-3.6L6 22l1.5-7.3L2 9.6l7.1-0.7L12 2z'
+      },
+      {
+        name: 'Expert', minLevel: 10, color: '#ea580c',
+        path: 'M12 2c-3 4-6 7-6 11a6 6 0 0 0 12 0c0-2-1-3.5-2-5 .5 2-1 3-2 2 .5-2-1-4-2-8z'
+      },
+      {
+        name: 'Master', minLevel: 20, color: '#eab308',
+        path: 'M3 8l4 4 5-7 5 7 4-4-2 10H5L3 8z'
+      }
+    ];
+
+    function showXpPopup(xp) {
+      const el = document.getElementById('xpPopup');
+      el.textContent = '+' + xp + ' XP';
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 1600);
+    }
+
+    /* ==================================================================
+     * VIEW: หน้าหลัก (Part 1)
+     * ================================================================== */
+    let currentUserId = null;
+    let pendingResult = null;
+
+    window.onload = function () {
+      google.script.run
+        .withSuccessHandler(renderUsersDropdown)
+        .withFailureHandler(onHomeError)
+        .getUsersList();
+    };
+
+    function renderUsersDropdown(users) {
+      const select = document.getElementById('userSelect');
+      select.innerHTML = '<option value="">-- เลือก user --</option>' +
+        users.map(u => `<option value="${u.userId}">${u.name} (${u.department})</option>`).join('');
+      select.onchange = () => loadUserState(select.value);
+    }
+
+    function loadUserState(userId) {
+      if (!userId) return;
+      currentUserId = userId;
+      pendingResult = null;
+      document.getElementById('submitBtn').style.display = 'none';
+      document.getElementById('analyzeResult').textContent = '';
+      document.getElementById('userCard').innerHTML = '⏳ กำลังโหลด...';
+
+      google.script.run
+        .withSuccessHandler(renderUserCard)
+        .withFailureHandler(onHomeError)
+        .getUserState(userId);
+    }
+
+    function renderUserCard(state) {
+      if (!state) {
+        onHomeError({ message: 'ไม่ได้รับข้อมูล user จาก server (state เป็น null)' });
+        return;
+      }
+      const g = state.growupLevel;
+      const pendingBadge = g.pendingXp > 0
+        ? ` <span class="pending-xp">+${g.pendingXp} XP (รออนุมัติ)</span>`
+        : '';
+      const tier = BADGE_TIERS.find(t => t.name === g.badge.name);
+      const badgeIcon = tier
+        ? `<svg class="badge-icon unlocked" style="--badge-color:${tier.color}" viewBox="0 0 24 24" width="28" height="28"><path d="${tier.path}"/></svg>`
+        : '';
+      document.getElementById('userCard').innerHTML =
+        `<h3>${state.name} — ${state.department}</h3>
+         <p>${badgeIcon} Level ${g.level} (${g.badge.name}) — XP ${g.xpIntoLevel}/${g.xpForNextLevel}${pendingBadge}</p>`;
+      renderSpecialList(state.specialList);
+      renderSubmissions(state.submissions);
+    }
+
+    function badgeShelfHtml(level) {
+      return BADGE_TIERS.map(tier => {
+        const unlocked = level >= tier.minLevel;
+        return `
+          <div class="badge-slot">
+            <svg class="badge-icon ${unlocked ? 'unlocked' : 'locked'}"
+                 style="--badge-color:${tier.color}" viewBox="0 0 24 24">
+              <path d="${tier.path}"/>
+            </svg>
+            <span class="badge-label">${tier.name}Lv.${tier.minLevel}+</span>
+          </div>`;
+      }).join('');
+    }
+
+    function renderSpecialList(specialList) {
+      if (!specialList || !specialList.length) {
+        document.getElementById('specialList').innerHTML = '<p>ไม่มีข้อมูล skill</p>';
+        return;
+      }
+      document.getElementById('specialList').innerHTML = specialList.map(s => {
+        const pending = s.pendingXp > 0 ? ` <span class="pending-xp">+${s.pendingXp}</span>` : '';
+        return `<div class="special-block">
+          <div class="special-header"><strong>${s.skill}</strong> — Level ${s.level} (XP ${s.xpIntoLevel}/${s.xpForNextLevel})${pending}</div>
+          <div class="badge-shelf">${badgeShelfHtml(s.level)}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderSubmissions(submissions) {
+      if (!submissions || !submissions.length) {
+        document.getElementById('submissionsList').innerHTML = '<p>ยังไม่มีรายการที่ส่งผล</p>';
+        return;
+      }
+      document.getElementById('submissionsList').innerHTML = submissions
+        .map(s => {
+          const d = s.timestamp ? new Date(s.timestamp).toLocaleDateString('th-TH') : '-';
+          return `<div><span>${d} — ${s.skill} / ${s.level}</span><span>XP ${s.xp} — [${s.status}]</span></div>`;
+        })
+        .join('');
+    }
+
+    async function analyzeCertificate() {
+      if (!currentUserId) return onHomeError({ message: 'กรุณาเลือก user ก่อน' });
+
+      const fileInput = document.getElementById('pdfFile');
+      if (!fileInput.files.length) return onHomeError({ message: 'เลือกไฟล์ PDF ก่อน' });
+
+      const file = fileInput.files[0];
+      const fileBase64 = await fileToBase64(file);
+      const resultEl = document.getElementById('analyzeResult');
+      resultEl.textContent = '⏳ กำลังวิเคราะห์... (OCR + AI อาจใช้เวลาสักครู่)';
+      document.getElementById('submitBtn').style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(onAnalyzeSuccess)
+        .withFailureHandler(onHomeError)
+        .analyzeCertificate(fileBase64, file.name, file.type);
+    }
+
+    function onAnalyzeSuccess(result) {
+      if (!result) { onHomeError({ message: 'ไม่ได้รับผลวิเคราะห์จาก server' }); return; }
+      pendingResult = result;
+      document.getElementById('analyzeResult').innerHTML =
+        `ทักษะ: ${result.skill}ระดับ: ${result.level}Rarity: x${result.rarity}XP ที่จะได้: ${result.xp}`;
+      document.getElementById('submitBtn').style.display = 'inline-block';
+    }
+
+    function submitResult() {
+      if (!currentUserId || !pendingResult) return;
+      const xpGained = pendingResult.xp;
+
+      google.script.run
+        .withSuccessHandler(function (state) {
+          pendingResult = null;
+          document.getElementById('submitBtn').style.display = 'none';
+          document.getElementById('analyzeResult').textContent = '✅ ส่งผลเรียบร้อย (รออนุมัติจาก Admin)';
+          document.getElementById('pdfFile').value = '';
+          showXpPopup(xpGained);
+          renderUserCard(state);
+        })
+        .withFailureHandler(onHomeError)
+        .submitResult(currentUserId, pendingResult);
+    }
+
+    function onHomeError(error) {
+      const msg = (error && error.message) ? error.message : String(error);
+      document.getElementById('analyzeResult').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+      console.error('NextTalent home error:', error);
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* ==================================================================
+     * VIEW: Admin (Part 2)
+     * ================================================================== */
+    let pendingSubmissions = [];
+    let configOptions = { skills: [], levels: [] };
+    let currentEditId = null;
+
+    function loadPendingSubmissions() {
+      document.getElementById('pendingList').innerHTML = '⏳ กำลังโหลด...';
+      google.script.run
+        .withSuccessHandler(function (options) {
+          configOptions = options;
+          google.script.run
+            .withSuccessHandler(renderPendingList)
+            .withFailureHandler(onAdminError)
+            .getPendingSubmissions();
+        })
+        .withFailureHandler(onAdminError)
+        .getConfigOptions();
+    }
+
+    function renderPendingList(list) {
+      pendingSubmissions = list || [];
+      const container = document.getElementById('pendingList');
+      if (!pendingSubmissions.length) {
+        container.innerHTML = '<p>ไม่มีรายการรออนุมัติ 🎉</p>';
+        return;
+      }
+      container.innerHTML = pendingSubmissions.map(item => {
+        const d = item.timestamp ? new Date(item.timestamp).toLocaleString('th-TH') : '-';
+        return `
+          <div class="pending-card">
+            <div class="pending-info">
+              <strong>${item.userName}</strong> <span style="color:var(--text-muted)">(${item.department})</span>
+              📅 ${d}
+              ${item.skill} / ${item.level} — <strong>XP ${item.xp}</strong>
+            </div>
+            <div class="pending-actions">
+              <button class="btn-view" onclick="openEditModal('${item.id}')">👁 ดู/แก้ไข</button>
+              <button class="btn-approve" onclick="approveItem('${item.id}')">✅ อนุมัติ</button>
+              <button class="btn-reject" onclick="rejectItem('${item.id}')">❌ ปฏิเสธ</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function openEditModal(id) {
+      const item = pendingSubmissions.find(p => p.id === id);
+      if (!item) return;
+      currentEditId = id;
+
+      document.getElementById('modalSkillSelect').innerHTML =
+        configOptions.skills.map(s => `<option value="${s}" ${s === item.skill ? 'selected' : ''}>${s}</option>`).join('');
+      document.getElementById('modalLevelSelect').innerHTML =
+        configOptions.levels.map(l => `<option value="${l}" ${l === item.level ? 'selected' : ''}>${l}</option>`).join('');
+
+      const previewEl = document.getElementById('modalFilePreview');
+      if (item.previewUrl) {
+        previewEl.innerHTML =
+          `<iframe src="${item.previewUrl}" width="100%" height="360" style="border:1px solid #fed7aa;border-radius:8px;"></iframe>
+           <p style="margin-top:6px;"><a href="${item.fileUrl}" target="_blank">เปิดไฟล์ในแท็บใหม่ ↗</a></p>`;
+      } else {
+        previewEl.innerHTML = `<p><a href="${item.fileUrl}" target="_blank">📄 เปิดไฟล์แนบในแท็บใหม่ ↗</a></p>`;
+      }
+
+      document.getElementById('modalEditError').innerHTML = '';
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+      currentEditId = null;
+    }
+
+    function saveModalEdit() {
+      if (!currentEditId) return;
+      const skill = document.getElementById('modalSkillSelect').value;
+      const level = document.getElementById('modalLevelSelect').value;
+
+      google.script.run
+        .withSuccessHandler(function (list) {
+          renderPendingList(list);
+          closeModal();
+        })
+        .withFailureHandler(function (error) {
+          const msg = (error && error.message) ? error.message : String(error);
+          document.getElementById('modalEditError').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+        })
+        .updateSubmission(currentEditId, skill, level);
+    }
+
+    function approveItem(id) {
+      google.script.run
+        .withSuccessHandler(renderPendingList)
+        .withFailureHandler(onAdminError)
+        .approveSubmission(id);
+    }
+
+    function rejectItem(id) {
+      google.script.run
+        .withSuccessHandler(renderPendingList)
+        .withFailureHandler(onAdminError)
+        .rejectSubmission(id);
+    }
+
+    function onAdminError(error) {
+      const msg = (error && error.message) ? error.message : String(error);
+      document.getElementById('pendingList').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+      console.error('NextTalent admin error:', error);
+    }
+
+    /* ==================================================================
+     * VIEW: ค้นหา (Part 2)
+     * ================================================================== */
+    let searchTimer = null;
+
+    function onSearchInput() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(performSearch, 300);
+    }
+
+    function performSearch() {
+      const q = document.getElementById('searchInput').value;
+      document.getElementById('searchResults').innerHTML = '⏳ กำลังค้นหา...';
+      google.script.run
+        .withSuccessHandler(renderSearchResults)
+        .withFailureHandler(onSearchError)
+        .searchUsers(q);
+    }
+
+    function renderSearchResults(results) {
+      const container = document.getElementById('searchResults');
+      if (!results || !results.length) {
+        container.innerHTML = '<p>ไม่พบผลลัพธ์</p>';
+        return;
+      }
+      container.innerHTML = results.map(r => {
+        const tier = BADGE_TIERS.find(t => t.name === r.growupLevel.badge.name);
+        const badgeIcon = tier
+          ? `<svg class="badge-icon unlocked" style="--badge-color:${tier.color}" viewBox="0 0 24 24" width="22" height="22"><path d="${tier.path}"/></svg>`
+          : '';
+        const tags = r.skillTags.length
+          ? r.skillTags.map(s => `<span class="skill-tag">${s}</span>`).join('')
+          : '<span class="skill-tag skill-tag-empty">ยังไม่มีทักษะที่อนุมัติ</span>';
+        return `<div class="search-card">
+          <h4>${r.name} <small>(${r.department})</small></h4>
+          <p style="display:flex;align-items:center;gap:6px;margin:0;">
+            ${badgeIcon} Level ${r.growupLevel.level} (${r.growupLevel.badge.name})
+          </p>
+          <div class="skill-tags">${tags}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function onSearchError(error) {
+      const msg = (error && error.message) ? error.message : String(error);
+      document.getElementById('searchResults').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+      console.error('NextTalent search error:', error);
     }
   </script>
 
