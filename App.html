@@ -190,7 +190,10 @@
     .ach-name-row .xp-text .pend { color: var(--primary); font-weight: 700; }
     .ach-bar-track { height: 8px; background: #e7e5e4; border-radius: 999px; margin-top: 6px; overflow: hidden; }
     .ach-bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+    .empty-note { color: var(--text-muted); font-size: 0.85rem; padding: 6px 0; }
 
+    /* ---- item-icon-circle: ใช้ใน badge shelf (extra) เท่านั้น
+       ถ้า skill ไม่มีคะแนนเลย (approvedXp=0 และ pendingXp=0) จะไม่ถูก render ตั้งแต่ต้น (ดู JS renderAchievements) */
     .item-grid { display: flex; gap: 12px; justify-content: space-between; }
     .item-grid.wrap { flex-wrap: wrap; justify-content: flex-start; }
     .item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 64px; }
@@ -225,6 +228,13 @@
     .chevron { color: #d6d3d1; flex-shrink: 0; }
 
     /* ================= ADMIN VIEW ================= */
+    .admin-form-input {
+      padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 0.88rem; width: 100%; background: #fff;
+    }
+    .admin-form-row { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .admin-form-row .field-label { font-size: 0.72rem; font-weight: 700; color: #57534e; margin-bottom: -4px; }
+
     .pending-card { background: #fafaf9; border-radius: 16px; padding: 14px 18px; margin-bottom: 12px;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .pending-info-row { display: flex; align-items: center; gap: 12px; }
@@ -336,7 +346,7 @@
         <div class="stats-row" id="statsRow"></div>
 
         <div class="cards-grid">
-          <!-- Achievements = specialList แสดงเป็น XP bar ต่อ skill -->
+          <!-- Achievements = specialList แสดงเป็น XP bar ต่อ skill (skill ที่ยังไม่มีคะแนนจะไม่แสดง) -->
           <div class="info-card">
             <div class="info-card-header">
               <h4>🏅 Achievements <span class="count-badge" id="achCount">0</span></h4>
@@ -344,7 +354,7 @@
             <div class="mini-progress"><div class="mini-progress-fill" id="achProgress" style="width:0%"></div></div>
             <div id="achievementsGrid"></div>
             <div class="item-grid wrap hidden" id="achievementsExtra" style="margin-top:16px;"></div>
-            <span class="view-all-link" onclick="toggleAchExtra()" id="achViewAllBtn">ดู badge shelf ทั้งหมด</span>
+            <span class="view-all-link hidden" onclick="toggleAchExtra()" id="achViewAllBtn">ดู badge shelf ทั้งหมด</span>
           </div>
 
           <!-- Inventory = รายการ submissions แบบ list คลิกดูรายละเอียดได้ -->
@@ -361,9 +371,32 @@
       <!-- ---------------- VIEW: Admin ---------------- -->
       <div id="view-admin" class="view-content hidden">
         <div class="main-topbar" style="justify-content:space-between;">
-          <h2>🛠 รายการรออนุมัติ</h2>
+          <h2>🛠 หน้า Admin</h2>
           <button class="btn btn-outline" onclick="loadPendingSubmissions()">🔄 รีเฟรช</button>
         </div>
+
+        <!-- เพิ่ม User ใหม่ -->
+        <div class="info-card" style="margin-bottom:24px;">
+          <div class="info-card-header"><h4>➕ เพิ่ม User ใหม่</h4></div>
+          <div class="admin-form-row">
+            <div>
+              <div class="field-label">ชื่อ-นามสกุล *</div>
+              <input type="text" id="newUserName" class="admin-form-input" placeholder="เช่น มานะ ใจดี">
+            </div>
+            <div>
+              <div class="field-label">หน่วยงาน</div>
+              <input type="text" id="newUserDept" class="admin-form-input" placeholder="เช่น ฝ่าย IT">
+            </div>
+            <div>
+              <div class="field-label">ลิงก์รูปโปรไฟล์ (ไม่บังคับ)</div>
+              <input type="text" id="newUserPhoto" class="admin-form-input" placeholder="https://...">
+            </div>
+            <div id="addUserError"></div>
+            <button class="btn btn-dark" onclick="addNewUser()" style="align-self:flex-start;">➕ เพิ่ม User</button>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom:14px;">รายการรออนุมัติ</h3>
         <div id="pendingList">กำลังโหลด...</div>
       </div>
 
@@ -483,7 +516,6 @@
       el.replaceWith(newEl);
     }
 
-    // แปลงลิงก์ Drive แบบ view เป็นลิงก์ preview สำหรับฝัง iframe (ฝั่ง client เผื่อไม่มี previewUrl มาจาก server)
     function toPreviewUrl(fileUrl) {
       if (!fileUrl) return '';
       const match = fileUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -522,7 +554,7 @@
     let currentUserId = null;
     let pendingResult = null;
     let lastState = null;
-    let submissionsById = {}; // เก็บ submission ล่าสุดตาม id ไว้เปิด modal ดูรายละเอียด
+    let submissionsById = {};
 
     window.onload = function () {
       google.script.run
@@ -539,11 +571,16 @@
         .getPendingSubmissions();
     };
 
+    // รองรับการ re-render dropdown หลังเพิ่ม user ใหม่ โดยพยายามคงค่าที่เลือกอยู่เดิมไว้ (ถ้ายังมีอยู่ในลิสต์)
     function renderUsersDropdown(users) {
       const select = document.getElementById('userSelect');
+      const previousValue = select.value || currentUserId || '';
       select.innerHTML = '<option value="">-- เลือก user --</option>' +
         users.map(u => `<option value="${u.userId}">${u.name} (${u.department})</option>`).join('');
       select.onchange = () => loadUserState(select.value);
+      if (previousValue && users.some(u => u.userId === previousValue)) {
+        select.value = previousValue;
+      }
     }
 
     function loadUserState(userId) {
@@ -560,7 +597,6 @@
         .getUserState(userId);
     }
 
-    // ปุ่มรีเฟรชแมนนวล (ผู้ใช้กดเอง)
     function refreshCurrentUser() {
       if (!currentUserId) {
         document.getElementById('analyzeResult').innerHTML =
@@ -586,9 +622,6 @@
         .getUserState(currentUserId);
     }
 
-    // เรียกอัตโนมัติหลัง Admin อนุมัติ/ปฏิเสธสำเร็จ — รีเฟรชข้อมูล user ที่กำลังเลือกอยู่แบบเงียบๆ
-    // (ถ้า user ที่เลือกอยู่ตรงกับรายการที่ถูกอนุมัติ/ปฏิเสธ ข้อมูลจะอัปเดตทันทีแม้ตอนนี้จะอยู่ที่หน้า Admin ก็ตาม
-    //  พอกลับมาหน้าหลักจะเห็นข้อมูลล่าสุดโดยไม่ต้องกดรีเฟรชเอง)
     function autoRefreshHomeAfterAdminAction() {
       if (!currentUserId) return;
       google.script.run
@@ -648,14 +681,29 @@
     };
     function skillColor(skill) { return SKILL_COLORS[skill] || { bg: '#f1f1ef', fg: '#57534e' }; }
 
-    // Achievements: แต่ละ skill แสดงเป็นแถว ไอคอน + XP bar (progress ของ level ปัจจุบัน)
+    // Achievements: ซ่อนสกิลที่ยังไม่มีคะแนนเลย (ไม่มีทั้ง approvedXp และ pendingXp)
+    // เพื่อไม่ให้ item-icon-circle/แถวไอคอนของ skill ที่ยังไม่ทำอะไรเลยไปแสดงเปล่าๆ
     function renderAchievements(specialList) {
-      document.getElementById('achCount').textContent = specialList.length;
-      const totalLevel = specialList.reduce((s, x) => s + x.level, 0);
-      const maxPossible = specialList.length * 20;
+      const visibleList = specialList.filter(s => (s.approvedXp > 0 || s.pendingXp > 0));
+
+      document.getElementById('achCount').textContent = visibleList.length;
+
+      if (!visibleList.length) {
+        document.getElementById('achievementsGrid').innerHTML =
+          '<p class="empty-note">ยังไม่มีทักษะที่ได้คะแนน — ส่งใบรับรองเพื่อเริ่มสะสม XP</p>';
+        document.getElementById('achievementsExtra').innerHTML = '';
+        document.getElementById('achProgress').style.width = '0%';
+        document.getElementById('achViewAllBtn').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('achViewAllBtn').classList.remove('hidden');
+
+      const totalLevel = visibleList.reduce((s, x) => s + x.level, 0);
+      const maxPossible = visibleList.length * 20;
       document.getElementById('achProgress').style.width = Math.min(100, (totalLevel / maxPossible) * 100) + '%';
 
-      document.getElementById('achievementsGrid').innerHTML = specialList.map(s => {
+      document.getElementById('achievementsGrid').innerHTML = visibleList.map(s => {
         const tier = tierFor(s.level);
         const col = skillColor(s.skill);
         const pct = s.xpForNextLevel > 0 ? Math.min(100, (s.xpIntoLevel / s.xpForNextLevel) * 100) : 100;
@@ -672,8 +720,8 @@
         </div>`;
       }).join('');
 
-      // extra = badge shelf ครบ 4 ระดับต่อ skill (locked/unlocked)
-      document.getElementById('achievementsExtra').innerHTML = specialList.map(s => {
+      // badge shelf ครบ 4 ระดับ — แสดงเฉพาะ skill ที่มีคะแนนแล้วเท่านั้น (ตาม visibleList)
+      document.getElementById('achievementsExtra').innerHTML = visibleList.map(s => {
         return BADGE_TIERS.map(t => {
           const unlocked = s.level >= t.minLevel;
           return `<div class="item">
@@ -694,7 +742,6 @@
       btn.textContent = isHidden ? 'ย่อกลับ' : 'ดู badge shelf ทั้งหมด';
     }
 
-    // Inventory: list เรียงตามลำดับก่อน-หลัง (เก่าสุดอยู่บนสุด) — คลิกแต่ละแถวเพื่อดูรายละเอียด (OCR/ไฟล์แนบ)
     function renderInventory(submissions) {
       document.getElementById('invCount').textContent = submissions.length;
       const approvedCount = submissions.filter(s => s.status === 'approved').length;
@@ -734,7 +781,6 @@
       }).join('');
     }
 
-    // เปิด modal ดูรายละเอียดใบรับรองที่อัพโหลด (อ่านอย่างเดียว — preview ไฟล์ + OCR text)
     function openSubmissionModal(id) {
       const item = submissionsById[id];
       if (!item) return;
@@ -860,6 +906,35 @@
         .getConfigOptions();
     }
 
+    // เพิ่ม User ใหม่จากหน้า Admin — สร้าง userId อัตโนมัติ แล้วรีเฟรช dropdown ของหน้าหลักด้วย
+    function addNewUser() {
+      const name = document.getElementById('newUserName').value.trim();
+      const department = document.getElementById('newUserDept').value.trim();
+      const photoUrl = document.getElementById('newUserPhoto').value.trim();
+      const errEl = document.getElementById('addUserError');
+      errEl.innerHTML = '';
+
+      if (!name) {
+        errEl.innerHTML = '<div class="error-box">❌ กรุณาระบุชื่อ-นามสกุล</div>';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function (users) {
+          document.getElementById('newUserName').value = '';
+          document.getElementById('newUserDept').value = '';
+          document.getElementById('newUserPhoto').value = '';
+          errEl.innerHTML = '<div class="toast-note show">✅ เพิ่ม user เรียบร้อยแล้ว</div>';
+          setTimeout(() => { errEl.innerHTML = ''; }, 3000);
+          renderUsersDropdown(users); // อัปเดต dropdown เลือก user ในหน้าหลักให้เห็น user ใหม่ทันที
+        })
+        .withFailureHandler(function (error) {
+          const msg = (error && error.message) ? error.message : String(error);
+          errEl.innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+        })
+        .addUser(name, department, photoUrl);
+    }
+
     function renderPendingList(list) {
       pendingSubmissions = list || [];
       const badge = document.getElementById('pendingBadgeCount');
@@ -930,7 +1005,7 @@
         .withSuccessHandler(function (list) {
           renderPendingList(list);
           closeModal();
-          autoRefreshHomeAfterAdminAction(); // skill/level เปลี่ยน อาจกระทบ pendingXp ของ user ที่เปิดอยู่
+          autoRefreshHomeAfterAdminAction();
         })
         .withFailureHandler(function (error) {
           const msg = (error && error.message) ? error.message : String(error);
@@ -939,7 +1014,6 @@
         .updateSubmission(currentEditId, skill, level);
     }
 
-    // อนุมัติ — เปลี่ยน status เป็น approved แล้วรีเฟรชหน้า User อัตโนมัติ (ถ้ากำลังเลือก user อยู่)
     function approveItem(id) {
       google.script.run
         .withSuccessHandler(function (list) {
@@ -950,7 +1024,6 @@
         .approveSubmission(id);
     }
 
-    // ปฏิเสธ — เปลี่ยน status เป็น rejected แล้วรีเฟรชหน้า User อัตโนมัติเช่นกัน (pendingXp ต้องหายไปทันที)
     function rejectItem(id) {
       google.script.run
         .withSuccessHandler(function (list) {
