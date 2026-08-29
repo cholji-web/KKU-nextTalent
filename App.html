@@ -3,6 +3,9 @@
 <head>
   <base target="_top">
   <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #ea580c;
@@ -12,9 +15,9 @@
       --dark: #1c1917;
     }
     * { box-sizing: border-box; }
-    body {
+     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
       color: #292524;
       min-height: 100vh;
       background: linear-gradient(135deg, #e0e7ff 0%, #fbcfe8 45%, #fed7aa 100%);
@@ -38,34 +41,48 @@
 
     /* ================= SIDEBAR ================= */
     .sidebar {
-      width: 210px;
-      flex-shrink: 0;
-      padding: 28px 18px;
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
+  width: 210px;
+  flex-shrink: 0;
+  padding: 28px 18px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);  /* 🔶 เพิ่มบรรทัดนี้ */
+}
+   .sidebar-brand {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      margin-bottom: 8px; padding: 8px 8px 20px; text-align: center;
     }
-    .sidebar-brand {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; padding: 0 8px;
+    .sidebar-brand .logo-img {
+      height: 100px; width: auto; object-fit: contain; flex-shrink: 0;
+      border-radius: 8px; background: #fff; padding: 4px;
     }
-    .sidebar-brand .logo-dot {
-      width: 30px; height: 30px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--primary-light), var(--primary));
-      display: flex; align-items: center; justify-content: center; font-size: 1rem;
-    }
-    .sidebar-sub { font-size: 0.7rem; color: var(--text-muted); padding: 0 8px 28px; }
+   .sidebar-brand span.brand-text {
+  font-weight: 800; font-size: 1rem; line-height: 1.3;
+  color: #fff;   /* 🔶 เปลี่ยนจาก #1c1917 เป็นสีขาว */
+}
+    .sidebar-sub {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.75);   /* 🔶 เปลี่ยนจาก var(--text-muted) เป็นสีขาวโปร่งแสง */
+  padding: 0 8px 28px;
+}
 
     .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
     .sidebar-nav button {
-      display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px; border-radius: 12px; border: none; background: none;
-      color: #78716c; font-weight: 600; font-size: 0.88rem; text-align: left;
-      transition: background 0.15s, color 0.15s;
-    }
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 12px; border: none; background: none;
+  color: rgba(255,255,255,0.85);   /* 🔶 เปลี่ยนจาก #78716c */
+  font-weight: 600; font-size: 0.88rem; text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
     .sidebar-nav button svg { width: 18px; height: 18px; flex-shrink: 0; }
-    .sidebar-nav button:hover { background: #fafaf9; }
-    .sidebar-nav button.active-nav { background: #fff1e6; color: var(--primary); }
+    .sidebar-nav button:hover {
+  background: rgba(255,255,255,0.15);   /* 🔶 เปลี่ยนจาก #fafaf9 */
+}
+.sidebar-nav button.active-nav {
+  background: #fff;                      /* 🔶 เปลี่ยนจาก #fff1e6 */
+  color: var(--primary);                 /* คงสีส้มเดิมไว้ ตัดกับพื้นขาวชัดเจน */
+}
     .nav-badge {
       margin-left: auto; background: var(--primary); color: #fff; font-size: 0.65rem;
       font-weight: 700; padding: 1px 7px; border-radius: 999px;
@@ -226,7 +243,6 @@
     .chevron { color: #d6d3d1; flex-shrink: 0; }
 
     /* ================= ADMIN VIEW ================= */
-    /* ---- Tabs ---- */
     .admin-tabs {
       display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--border);
     }
@@ -246,8 +262,10 @@
       padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
       font-size: 0.88rem; width: 100%; background: #fff;
     }
-    .admin-form-row { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-    .admin-form-row .field-label { font-size: 0.72rem; font-weight: 700; color: #57534e; margin-bottom: -4px; }
+    /* ---- FIX: แยกแต่ละ field เป็น block อิสระ กัน field-label ถูก input ทับ ---- */
+    .admin-form-row { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+    .admin-form-field { display: flex; flex-direction: column; gap: 6px; }
+    .admin-form-field .field-label { font-size: 0.72rem; font-weight: 700; color: #57534e; }
 
     .pending-card { background: #fafaf9; border-radius: 16px; padding: 14px 18px; margin-bottom: 12px;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
@@ -286,6 +304,30 @@
       padding: 4px 12px; border-radius: 999px; border: 1px solid #fed7aa; }
     .skill-tag-empty { background: #f1f1ef; color: var(--text-muted); border-color: #e7e5e4; }
 
+    /* ================= DASHBOARD VIEW ================= */
+    .dash-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    .dash-skill-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; }
+    .dash-skill-row .name { width: 70px; font-size: 0.82rem; font-weight: 700; flex-shrink: 0; }
+    .dash-skill-row .bar-track { flex: 1; height: 10px; background: #e7e5e4; border-radius: 999px; overflow: hidden; }
+    .dash-skill-row .bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+    .dash-skill-row .count { width: 34px; text-align: right; font-size: 0.78rem; color: var(--text-muted); font-weight: 700; flex-shrink: 0; }
+
+    .leaderboard-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid #ececea; }
+    .leaderboard-row:last-child { border-bottom: none; }
+    .lb-rank { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; flex-shrink: 0; background: #e7e5e4; color: #57534e; }
+    .lb-rank.rank-1 { background: #fef9c3; color: #b45309; }
+    .lb-rank.rank-2 { background: #f1f1ef; color: #57534e; }
+    .lb-rank.rank-3 { background: #ffedd5; color: #9a3412; }
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-info .name { font-size: 0.85rem; font-weight: 700; }
+    .lb-info .dept { font-size: 0.7rem; color: var(--text-muted); }
+    .lb-xp { text-align: right; flex-shrink: 0; }
+    .lb-xp .xp-num { font-weight: 800; font-size: 0.88rem; }
+    .lb-xp .lv-label { font-size: 0.68rem; color: var(--text-muted); }
+
     /* ================= XP POPUP ================= */
     .xp-popup {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
@@ -309,13 +351,20 @@
 
     <!-- ================= SIDEBAR ================= -->
     <div class="sidebar">
-      <div class="sidebar-brand"><span class="logo-dot">🏆</span> NextTalent</div>
-      <div class="sidebar-sub">ระบบสะสม XP &amp; ทักษะ</div>
+       <div class="sidebar-brand">
+        <img class="logo-img" src="https://www.kku.ac.th/wp-content/uploads/2022/01/1.-official-logo-2022-26.png" alt="KKU Logo">
+        <span class="brand-text">KKU-NextTalent</span>
+      </div>
+      <div class="sidebar-sub" style="text-align:center; padding: 0 8px 28px;">ระบบสะสม XP &amp; ทักษะ</div>
 
       <div class="sidebar-nav">
         <button class="active-nav" onclick="switchView('home')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19h4V9H4v10zm6 0h4V5h-4v14zm6 0h4v-7h-4v7z"/></svg>
           หน้าหลัก
+        </button>
+        <button onclick="switchView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          แดชบอร์ด
         </button>
         <button onclick="switchView('admin')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13l-1.5 7h13L17 13M7 13L5 5h1.5M7 13h10M6.5 5H19l-2 8"/><circle cx="8" cy="20" r="1"/><circle cx="16" cy="20" r="1"/></svg>
@@ -360,7 +409,6 @@
         <div class="stats-row" id="statsRow"></div>
 
         <div class="cards-grid">
-          <!-- Achievements = specialList แสดงเป็น XP bar ต่อ skill (skill ที่ยังไม่มีคะแนนจะไม่แสดง) -->
           <div class="info-card">
             <div class="info-card-header">
               <h4>🏅 Achievements <span class="count-badge" id="achCount">0</span></h4>
@@ -371,7 +419,6 @@
             <span class="view-all-link hidden" onclick="toggleAchExtra()" id="achViewAllBtn">ดู badge shelf ทั้งหมด</span>
           </div>
 
-          <!-- Inventory = รายการ submissions แบบ list คลิกดูรายละเอียดได้ -->
           <div class="info-card">
             <div class="info-card-header">
               <h4>📦 Inventory <span class="count-badge" id="invCount">0</span></h4>
@@ -382,11 +429,32 @@
         </div>
       </div>
 
+      <!-- ---------------- VIEW: แดชบอร์ด ---------------- -->
+      <div id="view-dashboard" class="view-content hidden">
+        <div class="main-topbar" style="justify-content:space-between;margin-bottom:24px;">
+          <h2>📊 แดชบอร์ดภาพรวมระบบ</h2>
+          <button class="btn btn-outline" onclick="loadDashboard()">🔄 รีเฟรช</button>
+        </div>
+
+        <div class="stats-row" id="dashStatsRow"></div>
+
+        <div class="dash-grid">
+          <div class="info-card">
+            <div class="info-card-header"><h4>🥇 Leaderboard Top 5 (XP ที่อนุมัติแล้ว)</h4></div>
+            <div id="leaderboardList" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-header"><h4>📈 สัดส่วนทักษะ (approved)</h4></div>
+            <div id="skillDistribution" style="margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ---------------- VIEW: Admin (แบบ Tab) ---------------- -->
       <div id="view-admin" class="view-content hidden">
         <h2 style="margin-bottom:20px;">🛠 หน้า Admin</h2>
 
-        <!-- Tab buttons -->
         <div class="admin-tabs">
           <button class="admin-tab-btn active-tab" data-tab="pending" onclick="switchAdminTab('pending')">
             📋 รายการรออนุมัติ
@@ -397,7 +465,6 @@
           </button>
         </div>
 
-        <!-- Tab content: รายการรออนุมัติ -->
         <div id="admin-tab-pending" class="admin-tab-content active-tab-content">
           <div class="main-topbar" style="justify-content:space-between;margin-bottom:16px;">
             <h3 style="margin:0;">รายการรออนุมัติ</h3>
@@ -406,20 +473,21 @@
           <div id="pendingList">กำลังโหลด...</div>
         </div>
 
-        <!-- Tab content: เพิ่ม User ใหม่ -->
         <div id="admin-tab-addUser" class="admin-tab-content">
           <div class="info-card">
             <div class="info-card-header"><h4>➕ เพิ่ม User ใหม่</h4></div>
+
+            <!-- FIX: แต่ละ field ครอบด้วย .admin-form-field เพื่อไม่ให้ label ถูก input ทับ -->
             <div class="admin-form-row">
-              <div>
+              <div class="admin-form-field">
                 <div class="field-label">ชื่อ-นามสกุล *</div>
                 <input type="text" id="newUserName" class="admin-form-input" placeholder="เช่น มานะ ใจดี">
               </div>
-              <div>
+              <div class="admin-form-field">
                 <div class="field-label">หน่วยงาน</div>
                 <input type="text" id="newUserDept" class="admin-form-input" placeholder="เช่น ฝ่าย IT">
               </div>
-              <div>
+              <div class="admin-form-field">
                 <div class="field-label">ลิงก์รูปโปรไฟล์ (ไม่บังคับ)</div>
                 <input type="text" id="newUserPhoto" class="admin-form-input" placeholder="https://...">
               </div>
@@ -486,7 +554,9 @@
       check: '<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>',
       clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2" stroke-linecap="round"/>',
       cross: '<path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>',
-      chevronRight: '<path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>'
+      chevronRight: '<path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>',
+      users: '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      docs: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'
     };
     function svgIcon(name, size) {
       size = size || 17;
@@ -562,6 +632,13 @@
       setTimeout(() => el.classList.remove('show'), 1600);
     }
 
+    const SKILL_COLORS = {
+      'IT': { bg: '#ccfbf1', fg: '#0d9488' },
+      'บริหาร': { bg: '#ede9fe', fg: '#7c3aed' },
+      'ทั่วไป': { bg: '#fef3c7', fg: '#b45309' }
+    };
+    function skillColor(skill) { return SKILL_COLORS[skill] || { bg: '#f1f1ef', fg: '#57534e' }; }
+
     /* ==================================================================
      * VIEW SWITCH
      * ================================================================== */
@@ -576,9 +653,9 @@
 
       if (name === 'admin') loadPendingSubmissions();
       if (name === 'search') performSearch();
+      if (name === 'dashboard') loadDashboard();
     }
 
-    // สลับ tab ภายในหน้า Admin: "pending" หรือ "addUser"
     function switchAdminTab(name) {
       document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active-tab-content'));
       document.getElementById('admin-tab-' + name).classList.add('active-tab-content');
@@ -603,14 +680,11 @@
         .getUsersList();
 
       google.script.run
-        .withSuccessHandler(function (list) {
-          updatePendingBadges(list);
-        })
+        .withSuccessHandler(function (list) { updatePendingBadges(list); })
         .withFailureHandler(function () {})
         .getPendingSubmissions();
     };
 
-    // อัปเดต badge ตัวเลขรออนุมัติ ทั้งที่ sidebar และที่แท็บ "รายการรออนุมัติ" ในหน้า Admin
     function updatePendingBadges(list) {
       const count = (list && list.length) || 0;
       const sidebarBadge = document.getElementById('pendingBadgeCount');
@@ -725,13 +799,6 @@
       renderAchievements(state.specialList);
       renderInventory(state.submissions);
     }
-
-    const SKILL_COLORS = {
-      'IT': { bg: '#ccfbf1', fg: '#0d9488' },
-      'บริหาร': { bg: '#ede9fe', fg: '#7c3aed' },
-      'ทั่วไป': { bg: '#fef3c7', fg: '#b45309' }
-    };
-    function skillColor(skill) { return SKILL_COLORS[skill] || { bg: '#f1f1ef', fg: '#57534e' }; }
 
     function renderAchievements(specialList) {
       const visibleList = specialList.filter(s => (s.approvedXp > 0 || s.pendingXp > 0));
@@ -932,6 +999,92 @@
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+    }
+
+    /* ==================================================================
+     * แดชบอร์ด
+     * ================================================================== */
+    function loadDashboard() {
+      document.getElementById('dashStatsRow').innerHTML = '⏳ กำลังโหลด...';
+      document.getElementById('leaderboardList').innerHTML = '';
+      document.getElementById('skillDistribution').innerHTML = '';
+
+      google.script.run
+        .withSuccessHandler(renderDashboard)
+        .withFailureHandler(onDashboardError)
+        .getDashboardStats();
+    }
+
+    function renderDashboard(stats) {
+      document.getElementById('dashStatsRow').innerHTML = `
+        <div class="stat-pill">
+          <div class="stat-icon">${svgIcon('users')}</div>
+          <div><div class="stat-value">${stats.totalUsers}</div><div class="stat-label">User ทั้งหมด</div></div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-icon">${svgIcon('docs')}</div>
+          <div><div class="stat-value">${stats.totalSubmissions}</div><div class="stat-label">ใบรับรองทั้งหมด</div></div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-icon">${svgIcon('check')}</div>
+          <div><div class="stat-value">${stats.approvedCount}</div><div class="stat-label">อนุมัติแล้ว</div></div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-icon">${svgIcon('clock')}</div>
+          <div><div class="stat-value">${stats.pendingCount}</div><div class="stat-label">รออนุมัติ</div></div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-icon">${svgIcon('target')}</div>
+          <div><div class="stat-value">${stats.totalApprovedXp}</div><div class="stat-label">XP รวมที่อนุมัติ</div></div>
+        </div>`;
+
+      // Leaderboard
+      const lbContainer = document.getElementById('leaderboardList');
+      if (!stats.leaderboard.length) {
+        lbContainer.innerHTML = '<p class="empty-note">ยังไม่มีข้อมูล</p>';
+      } else {
+        lbContainer.innerHTML = stats.leaderboard.map((u, i) => {
+          const rank = i + 1;
+          const rankClass = rank <= 3 ? `rank-${rank}` : '';
+          const avatar = avatarHtml(u.name, u.userId, u.photoUrl, 'avatar-sm');
+          return `<div class="leaderboard-row">
+            <div class="lb-rank ${rankClass}">${rank}</div>
+            ${avatar}
+            <div class="lb-info">
+              <div class="name">${u.name}</div>
+              <div class="dept">${u.department}</div>
+            </div>
+            <div class="lb-xp">
+              <div class="xp-num">${u.xp} XP</div>
+              <div class="lv-label">Lv.${u.level} · ${u.badge.name}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      // Skill distribution
+      const skillContainer = document.getElementById('skillDistribution');
+      const entries = Object.entries(stats.skillCounts || {});
+      if (!entries.length) {
+        skillContainer.innerHTML = '<p class="empty-note">ยังไม่มีรายการที่อนุมัติ</p>';
+      } else {
+        const maxCount = Math.max(...entries.map(e => e[1]));
+        skillContainer.innerHTML = entries.map(([skill, count]) => {
+          const col = skillColor(skill);
+          const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+          return `<div class="dash-skill-row">
+            <div class="name">${skill}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col.fg}"></div></div>
+            <div class="count">${count}</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    function onDashboardError(error) {
+      const msg = (error && error.message) ? error.message : String(error);
+      document.getElementById('dashStatsRow').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+      console.error('NextTalent dashboard error:', error);
     }
 
     /* ==================================================================

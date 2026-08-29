@@ -58,23 +58,32 @@ function setupSheet() {
  * เช็คว่า Sheet มีข้อมูลอยู่แล้วหรือยัง (getLastRow() <= 1 คือมีแค่ header)
  * ถ้ามีข้อมูลแล้วจะไม่เขียนทับ
  */
+/** ข้อความ prompt เริ่มต้นสำหรับวิเคราะห์ทักษะ (ใช้ตอน seed ครั้งแรก) */
+var DEFAULT_SKILL_PROMPT_ =
+  'คุณคือผู้ช่วยวิเคราะห์ทักษะจากข้อความที่ได้ โดยวิเคราะห์หาว่าเป็นทักษะด้านใดใน 3 ทักษะนี้ ' +
+  '1.IT 2.บริหาร 3.ทั่วไป และวิเคราะห์ว่าเป็นทักษะระดับใด 1.มหาวิทยาลัย 2.ระดับประเทศ 3.นานาชาติ ' +
+  'ตอบกลับเป็น JSON ที่ถูกต้องเท่านั้น รูปแบบ {"skill":"...","level":"..."} ห้ามมีข้อความอื่นนอกเหนือจาก JSON';
+
+/**
+ * รันครั้งเดียวหลัง setupSheet() — ใส่ค่า default ลง Config และ user ตัวอย่างลง Users
+ */
 function setupSeedData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // --- seed Users (photoUrl เว้นว่างไว้ — ให้ระบบ generate avatar ตัวอักษรย่อเอง) ---
+  // --- seed Users ---
   var usersSheet = ss.getSheetByName('Users');
   if (!usersSheet) {
     throw new Error('ไม่พบ Sheet "Users" — กรุณารัน setupSheet() ก่อน');
   }
   if (usersSheet.getLastRow() <= 1) {
-    usersSheet.getRange(2, 1, 3, 4).setValues([
-      ['u001', 'มานะ ใจดี', 'ฝ่าย IT', ''],
-      ['u002', 'สมหญิง รักเรียน', 'ฝ่ายบริหาร', ''],
-      ['u003', 'วิชัย ตั้งใจทำงาน', 'ฝ่ายทั่วไป', '']
+    usersSheet.getRange(2, 1, 3, 3).setValues([
+      ['u001', 'มานะ ใจดี', 'ฝ่าย IT'],
+      ['u002', 'สมหญิง รักเรียน', 'ฝ่ายบริหาร'],
+      ['u003', 'วิชัย ตั้งใจทำงาน', 'ฝ่ายทั่วไป']
     ]);
   }
 
-  // --- seed Config ---
+  // --- seed Config (level / rarity / curve) เฉพาะตอนที่ยังไม่มีข้อมูลเลย ---
   var configSheet = ss.getSheetByName('Config');
   if (!configSheet) {
     throw new Error('ไม่พบ Sheet "Config" — กรุณารัน setupSheet() ก่อน');
@@ -95,7 +104,27 @@ function setupSeedData() {
     configSheet.getRange(2, 1, rows.length, 3).setValues(rows);
   }
 
+  // 🔶 เติมแถว prompt ให้เสมอ ถ้ายังไม่มี (ไม่สนใจว่า Config มีข้อมูลอื่นอยู่แล้วหรือไม่)
+  // เพื่อรองรับ migration กรณีที่รัน setupSeedData() ไปแล้วรอบก่อนหน้า (ก่อนมี feature นี้)
+  ensurePromptSeed_();
+
   Logger.log('setupSeedData() เสร็จสิ้น: Config และ Users มีข้อมูลตัวอย่างพร้อมใช้งาน');
+}
+
+/** เติมแถว category="prompt" ลง Config ถ้ายังไม่มี (เรียกซ้ำได้ ไม่ทำให้เกิดแถวซ้ำ) */
+function ensurePromptSeed_() {
+  var configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+  if (!configSheet) return;
+
+  var data = configSheet.getDataRange().getValues();
+  var hasPrompt = data.some(function (row) {
+    return row[0] === 'prompt' && row[1] === 'skillAnalysis';
+  });
+
+  if (!hasPrompt) {
+    configSheet.appendRow(['prompt', 'skillAnalysis', DEFAULT_SKILL_PROMPT_]);
+    Logger.log('เพิ่มแถว prompt เริ่มต้นลง Config เรียบร้อย');
+  }
 }
 
 /**
@@ -639,13 +668,8 @@ function callAiGateway_(ocrText) {
     throw new Error('ไม่พบ Script Property "AI_GATEWAY_BASE_URL" หรือ "AI_GATEWAY_API_KEY"');
   }
 
-  var systemPrompt =
-    'คุณคือผู้ช่วยวิเคราะห์ทักษะจากข้อความที่ได้ โดยวิเคราะห์หาว่าเป็นทักษะด้านใดใน 3 ทักษะนี้ ' +
-    '1.IT 2.บริหาร 3.ทั่วไป และวิเคราะห์ว่าเป็นทักษะระดับใด 1.มหาวิทยาลัย 2.ประเทศ 3.นานาชาติ ' +
-    'ตอบกลับเป็น JSON ที่ถูกต้องเท่านั้น รูปแบบ {"skill":"...","level":"..."} ' +
-    'โดย skill ต้องเป็นหนึ่งใน "IT", "บริหาร", "ทั่วไป", "วิทยากร" เท่านั้น ' +
-    'และ level ต้องเป็นหนึ่งใน "มหาวิทยาลัย", "ประเทศ", "นานาชาติ" เท่านั้น ' +
-    'ห้ามมีข้อความอื่นนอกเหนือจาก JSON ห้ามเติมคำอธิบายหรือ markdown code block';
+  // 🔶 เปลี่ยนจาก hardcode string เป็นดึงจาก Sheet Config (category=prompt, key=skillAnalysis)
+  var systemPrompt = loadPrompt_('skillAnalysis');
 
   var payload = {
     model: 'deepseek-v4-pro',
@@ -682,21 +706,15 @@ function callAiGateway_(ocrText) {
     throw new Error('AI Gateway ไม่มีข้อความตอบกลับที่ใช้งานได้: ' + rawText);
   }
 
-  var cleanContent = content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-
   var result;
-  try { result = JSON.parse(cleanContent); } catch (e) {
+  try { result = JSON.parse(content); } catch (e) {
     throw new Error('AI วิเคราะห์ทักษะตอบกลับไม่ใช่ JSON ที่ parse ได้: ' + content);
   }
 
   if (!result.skill || !result.level) {
     throw new Error('AI วิเคราะห์ทักษะตอบกลับไม่ครบ skill/level: ' + content);
   }
-
-  return {
-    skill: String(result.skill).trim(),
-    level: String(result.level).trim()
-  };
+  return result;
 }
 
 /** โหลดค่า baseXP (ตาม level), rarity (ตาม skill), curve (growupLevel) และ specialCurve (specialList) จาก Sheet "Config" */
@@ -771,4 +789,147 @@ function debugGetSubmissions_() {
 
 function debugGetPending_() {
   Logger.log(JSON.stringify(getPendingSubmissions(), null, 2));
+}
+
+/**
+ * เพิ่ม user ใหม่ลง Sheet "Users" — สร้าง userId อัตโนมัติต่อจากรายการล่าสุด
+ * (เช่นมี u001, u002, u003 อยู่แล้ว -> user ใหม่จะได้ u004)
+ * คืนค่า getUsersList() ล่าสุดเพื่อให้ client รีเฟรช dropdown ได้ทันที
+ */
+function addUser(name, department, photoUrl) {
+  name = String(name || '').trim();
+  department = String(department || '').trim();
+  photoUrl = String(photoUrl || '').trim();
+
+  if (!name) {
+    throw new Error('กรุณาระบุชื่อ-นามสกุลของ user');
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
+  if (!sheet) {
+    throw new Error('ไม่พบ Sheet "Users" — กรุณารัน setupSheet() ก่อน');
+  }
+
+  var newUserId = generateNextUserId_(sheet);
+  sheet.appendRow([newUserId, name, department, photoUrl]);
+
+  return getUsersList();
+}
+
+/** สร้าง userId ใหม่ต่อจากรูปแบบ "u001", "u002", ... โดยหาเลขสูงสุดที่มีอยู่แล้ว +1 */
+function generateNextUserId_(sheet) {
+  var data = sheet.getDataRange().getValues();
+  var maxNum = 0;
+
+  for (var i = 1; i < data.length; i++) {
+    var id = String(data[i][0] || '');
+    var match = id.match(/^u(\d+)$/i);
+    if (match) {
+      var num = parseInt(match[1], 10);
+      if (num > maxNum) maxNum = num;
+    }
+  }
+
+  var nextNum = maxNum + 1;
+  var padded = String(nextNum);
+  while (padded.length < 3) padded = '0' + padded;
+  return 'u' + padded;
+}
+
+/**
+ * รวมสถิติทั้งระบบสำหรับหน้า Dashboard:
+ * จำนวน user ทั้งหมด, จำนวน submissions แยกตามสถานะ, XP รวมที่อนุมัติแล้ว,
+ * การกระจายตัวของ skill (เฉพาะ approved), และ leaderboard top 5 (เรียงตาม XP รวม approved)
+ */
+function getDashboardStats() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var usersSheet = ss.getSheetByName('Users');
+  var subSheet = ss.getSheetByName('Submissions');
+  if (!usersSheet || !subSheet) {
+    throw new Error('ไม่พบ Sheet "Users" หรือ "Submissions" — กรุณารัน setupSheet() ก่อน');
+  }
+
+  var users = getUsersList();
+
+  var subData = subSheet.getDataRange().getValues();
+  var headers = subData[0];
+  var rows = subData.slice(1).map(function (row) {
+    var obj = {};
+    headers.forEach(function (h, i) { obj[h] = row[i]; });
+    return obj;
+  });
+
+  var approved = rows.filter(function (r) { return r.status === 'approved'; });
+  var pending = rows.filter(function (r) { return r.status === 'submitted'; });
+  var rejected = rows.filter(function (r) { return r.status === 'rejected'; });
+
+  var totalApprovedXp = approved.reduce(function (sum, r) { return sum + Number(r.xp || 0); }, 0);
+
+  // การกระจายตัวของ skill (นับจำนวนรายการ approved ต่อ skill)
+  var skillCounts = {};
+  approved.forEach(function (r) {
+    skillCounts[r.skill] = (skillCounts[r.skill] || 0) + 1;
+  });
+
+  // Leaderboard: รวม XP approved ต่อ user แล้วคำนวณ growupLevel ด้วย curve เดียวกับ getUserState()
+  var config = loadConfig_();
+  var leaderboard = users.map(function (u) {
+    var userApprovedXp = approved
+      .filter(function (r) { return r.userId === u.userId; })
+      .reduce(function (sum, r) { return sum + Number(r.xp || 0); }, 0);
+
+    var levelInfo = calcLevelFromXp_(userApprovedXp, config.curve.base, config.curve.exponent);
+
+    return {
+      userId: u.userId,
+      name: u.name,
+      department: u.department,
+      photoUrl: u.photoUrl || '',
+      xp: userApprovedXp,
+      level: levelInfo.level,
+      badge: getBadge_(levelInfo.level)
+    };
+  })
+  .sort(function (a, b) { return b.xp - a.xp; })
+  .slice(0, 5);
+
+  return {
+    totalUsers: users.length,
+    totalSubmissions: rows.length,
+    approvedCount: approved.length,
+    pendingCount: pending.length,
+    rejectedCount: rejected.length,
+    totalApprovedXp: totalApprovedXp,
+    skillCounts: skillCounts,
+    leaderboard: leaderboard
+  };
+}
+
+/**
+ * โหลด prompt จาก Sheet "Config" (category = "prompt") ตาม key ที่กำหนด
+ * ให้ Admin แก้ไขข้อความ prompt ได้ผ่านชีตโดยตรง ไม่ต้องแก้โค้ด/deploy ใหม่
+ */
+function loadPrompt_(key) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+  if (!sheet) {
+    throw new Error('ไม่พบ Sheet "Config" — กรุณารัน setupSheet() ก่อน');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var category = data[i][0];
+    var rowKey = data[i][1];
+    var value = data[i][2];
+    if (category === 'prompt' && rowKey === key) {
+      if (!value || String(value).trim() === '') {
+        throw new Error('พบ prompt key="' + key + '" ใน Config แต่ค่า value เป็นค่าว่าง');
+      }
+      return String(value);
+    }
+  }
+
+  throw new Error(
+    'ไม่พบ prompt key="' + key + '" ใน Sheet "Config" (category=prompt) — ' +
+    'กรุณาเพิ่มแถว category="prompt", key="' + key + '" พร้อมข้อความ prompt ใน column value'
+  );
 }
