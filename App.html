@@ -192,8 +192,6 @@
     .ach-bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
     .empty-note { color: var(--text-muted); font-size: 0.85rem; padding: 6px 0; }
 
-    /* ---- item-icon-circle: ใช้ใน badge shelf (extra) เท่านั้น
-       ถ้า skill ไม่มีคะแนนเลย (approvedXp=0 และ pendingXp=0) จะไม่ถูก render ตั้งแต่ต้น (ดู JS renderAchievements) */
     .item-grid { display: flex; gap: 12px; justify-content: space-between; }
     .item-grid.wrap { flex-wrap: wrap; justify-content: flex-start; }
     .item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 64px; }
@@ -228,6 +226,22 @@
     .chevron { color: #d6d3d1; flex-shrink: 0; }
 
     /* ================= ADMIN VIEW ================= */
+    /* ---- Tabs ---- */
+    .admin-tabs {
+      display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--border);
+    }
+    .admin-tab-btn {
+      padding: 10px 20px; border: none; background: none; cursor: pointer;
+      font-weight: 700; font-size: 0.88rem; color: var(--text-muted);
+      border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+      display: flex; align-items: center; gap: 8px; transition: color 0.15s, border-color 0.15s;
+    }
+    .admin-tab-btn:hover { color: #44403c; }
+    .admin-tab-btn.active-tab { color: var(--primary); border-bottom-color: var(--primary); }
+    .admin-tab-btn .nav-badge { margin-left: 0; }
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active-tab-content { display: block; }
+
     .admin-form-input {
       padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
       font-size: 0.88rem; width: 100%; background: #fff;
@@ -368,36 +382,52 @@
         </div>
       </div>
 
-      <!-- ---------------- VIEW: Admin ---------------- -->
+      <!-- ---------------- VIEW: Admin (แบบ Tab) ---------------- -->
       <div id="view-admin" class="view-content hidden">
-        <div class="main-topbar" style="justify-content:space-between;">
-          <h2>🛠 หน้า Admin</h2>
-          <button class="btn btn-outline" onclick="loadPendingSubmissions()">🔄 รีเฟรช</button>
+        <h2 style="margin-bottom:20px;">🛠 หน้า Admin</h2>
+
+        <!-- Tab buttons -->
+        <div class="admin-tabs">
+          <button class="admin-tab-btn active-tab" data-tab="pending" onclick="switchAdminTab('pending')">
+            📋 รายการรออนุมัติ
+            <span class="nav-badge" id="pendingTabBadge" style="display:none;">0</span>
+          </button>
+          <button class="admin-tab-btn" data-tab="addUser" onclick="switchAdminTab('addUser')">
+            ➕ เพิ่ม User ใหม่
+          </button>
         </div>
 
-        <!-- เพิ่ม User ใหม่ -->
-        <div class="info-card" style="margin-bottom:24px;">
-          <div class="info-card-header"><h4>➕ เพิ่ม User ใหม่</h4></div>
-          <div class="admin-form-row">
-            <div>
-              <div class="field-label">ชื่อ-นามสกุล *</div>
-              <input type="text" id="newUserName" class="admin-form-input" placeholder="เช่น มานะ ใจดี">
+        <!-- Tab content: รายการรออนุมัติ -->
+        <div id="admin-tab-pending" class="admin-tab-content active-tab-content">
+          <div class="main-topbar" style="justify-content:space-between;margin-bottom:16px;">
+            <h3 style="margin:0;">รายการรออนุมัติ</h3>
+            <button class="btn btn-outline" onclick="loadPendingSubmissions()">🔄 รีเฟรช</button>
+          </div>
+          <div id="pendingList">กำลังโหลด...</div>
+        </div>
+
+        <!-- Tab content: เพิ่ม User ใหม่ -->
+        <div id="admin-tab-addUser" class="admin-tab-content">
+          <div class="info-card">
+            <div class="info-card-header"><h4>➕ เพิ่ม User ใหม่</h4></div>
+            <div class="admin-form-row">
+              <div>
+                <div class="field-label">ชื่อ-นามสกุล *</div>
+                <input type="text" id="newUserName" class="admin-form-input" placeholder="เช่น มานะ ใจดี">
+              </div>
+              <div>
+                <div class="field-label">หน่วยงาน</div>
+                <input type="text" id="newUserDept" class="admin-form-input" placeholder="เช่น ฝ่าย IT">
+              </div>
+              <div>
+                <div class="field-label">ลิงก์รูปโปรไฟล์ (ไม่บังคับ)</div>
+                <input type="text" id="newUserPhoto" class="admin-form-input" placeholder="https://...">
+              </div>
+              <div id="addUserError"></div>
+              <button class="btn btn-dark" onclick="addNewUser()" style="align-self:flex-start;">➕ เพิ่ม User</button>
             </div>
-            <div>
-              <div class="field-label">หน่วยงาน</div>
-              <input type="text" id="newUserDept" class="admin-form-input" placeholder="เช่น ฝ่าย IT">
-            </div>
-            <div>
-              <div class="field-label">ลิงก์รูปโปรไฟล์ (ไม่บังคับ)</div>
-              <input type="text" id="newUserPhoto" class="admin-form-input" placeholder="https://...">
-            </div>
-            <div id="addUserError"></div>
-            <button class="btn btn-dark" onclick="addNewUser()" style="align-self:flex-start;">➕ เพิ่ม User</button>
           </div>
         </div>
-
-        <h3 style="margin-bottom:14px;">รายการรออนุมัติ</h3>
-        <div id="pendingList">กำลังโหลด...</div>
       </div>
 
       <!-- ---------------- VIEW: ค้นหา ---------------- -->
@@ -548,6 +578,16 @@
       if (name === 'search') performSearch();
     }
 
+    // สลับ tab ภายในหน้า Admin: "pending" หรือ "addUser"
+    function switchAdminTab(name) {
+      document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active-tab-content'));
+      document.getElementById('admin-tab-' + name).classList.add('active-tab-content');
+
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active-tab'));
+      const btn = document.querySelector(`.admin-tab-btn[data-tab="${name}"]`);
+      if (btn) btn.classList.add('active-tab');
+    }
+
     /* ==================================================================
      * หน้าหลัก
      * ================================================================== */
@@ -564,14 +604,26 @@
 
       google.script.run
         .withSuccessHandler(function (list) {
-          const badge = document.getElementById('pendingBadgeCount');
-          if (list && list.length) { badge.textContent = list.length; badge.style.display = 'inline-block'; }
+          updatePendingBadges(list);
         })
         .withFailureHandler(function () {})
         .getPendingSubmissions();
     };
 
-    // รองรับการ re-render dropdown หลังเพิ่ม user ใหม่ โดยพยายามคงค่าที่เลือกอยู่เดิมไว้ (ถ้ายังมีอยู่ในลิสต์)
+    // อัปเดต badge ตัวเลขรออนุมัติ ทั้งที่ sidebar และที่แท็บ "รายการรออนุมัติ" ในหน้า Admin
+    function updatePendingBadges(list) {
+      const count = (list && list.length) || 0;
+      const sidebarBadge = document.getElementById('pendingBadgeCount');
+      const tabBadge = document.getElementById('pendingTabBadge');
+      if (count > 0) {
+        sidebarBadge.textContent = count; sidebarBadge.style.display = 'inline-block';
+        tabBadge.textContent = count; tabBadge.style.display = 'inline-block';
+      } else {
+        sidebarBadge.style.display = 'none';
+        tabBadge.style.display = 'none';
+      }
+    }
+
     function renderUsersDropdown(users) {
       const select = document.getElementById('userSelect');
       const previousValue = select.value || currentUserId || '';
@@ -681,8 +733,6 @@
     };
     function skillColor(skill) { return SKILL_COLORS[skill] || { bg: '#f1f1ef', fg: '#57534e' }; }
 
-    // Achievements: ซ่อนสกิลที่ยังไม่มีคะแนนเลย (ไม่มีทั้ง approvedXp และ pendingXp)
-    // เพื่อไม่ให้ item-icon-circle/แถวไอคอนของ skill ที่ยังไม่ทำอะไรเลยไปแสดงเปล่าๆ
     function renderAchievements(specialList) {
       const visibleList = specialList.filter(s => (s.approvedXp > 0 || s.pendingXp > 0));
 
@@ -720,7 +770,6 @@
         </div>`;
       }).join('');
 
-      // badge shelf ครบ 4 ระดับ — แสดงเฉพาะ skill ที่มีคะแนนแล้วเท่านั้น (ตาม visibleList)
       document.getElementById('achievementsExtra').innerHTML = visibleList.map(s => {
         return BADGE_TIERS.map(t => {
           const unlocked = s.level >= t.minLevel;
@@ -906,7 +955,6 @@
         .getConfigOptions();
     }
 
-    // เพิ่ม User ใหม่จากหน้า Admin — สร้าง userId อัตโนมัติ แล้วรีเฟรช dropdown ของหน้าหลักด้วย
     function addNewUser() {
       const name = document.getElementById('newUserName').value.trim();
       const department = document.getElementById('newUserDept').value.trim();
@@ -926,7 +974,7 @@
           document.getElementById('newUserPhoto').value = '';
           errEl.innerHTML = '<div class="toast-note show">✅ เพิ่ม user เรียบร้อยแล้ว</div>';
           setTimeout(() => { errEl.innerHTML = ''; }, 3000);
-          renderUsersDropdown(users); // อัปเดต dropdown เลือก user ในหน้าหลักให้เห็น user ใหม่ทันที
+          renderUsersDropdown(users);
         })
         .withFailureHandler(function (error) {
           const msg = (error && error.message) ? error.message : String(error);
@@ -937,9 +985,7 @@
 
     function renderPendingList(list) {
       pendingSubmissions = list || [];
-      const badge = document.getElementById('pendingBadgeCount');
-      if (pendingSubmissions.length) { badge.textContent = pendingSubmissions.length; badge.style.display = 'inline-block'; }
-      else badge.style.display = 'none';
+      updatePendingBadges(pendingSubmissions);
 
       const container = document.getElementById('pendingList');
       if (!pendingSubmissions.length) {
