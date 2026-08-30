@@ -3,366 +3,402 @@
 <head>
   <base target="_top">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #ea580c;
-      --primary-light: #f59e0b;
-      --text-muted: #78716c;
-      --border: #f1f1ef;
-      --dark: #1c1917;
+      --purple-1: #7c3aed;
+      --purple-2: #a855f7;
+      --pink: #ec4899;
+      --active-1: #fb923c;
+      --active-2: #ef4444;
+      --gold: #fbbf24;
+      --cyan: #22d3ee;
+      --success: #34d399;
+      --danger: #f87171;
+      --text: #f5f3ff;
+      --text-dim: #9d94b8;
+      --text-dim-2: #6b6285;
+      --card: rgba(255,255,255,0.045);
+      --card-strong: rgba(255,255,255,0.09);
+      --border: rgba(255,255,255,0.09);
     }
     * { box-sizing: border-box; }
-     body {
+    body {
       margin: 0;
       font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
-      color: #292524;
+      color: var(--text);
       min-height: 100vh;
-      background: linear-gradient(135deg, #e0e7ff 0%, #fbcfe8 45%, #fed7aa 100%);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(124,58,237,0.28), transparent 45%),
+        radial-gradient(circle at 90% 10%, rgba(236,72,153,0.16), transparent 42%),
+        linear-gradient(160deg, #120a1f 0%, #0a0710 55%, #050308 100%);
+      background-attachment: fixed;
       padding: 24px;
     }
-    h2, h3, h4 { margin: 0; color: #1c1917; }
+    h2, h3, h4 { margin: 0; color: #fff; }
+    p { margin: 0; }
     .hidden { display: none !important; }
     button { font-family: inherit; cursor: pointer; }
+    a { color: var(--purple-2); }
 
     /* ================= APP SHELL ================= */
     .app-shell {
-      max-width: 1240px;
+      max-width: 1280px;
       margin: 0 auto;
-      background: #fff;
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 28px;
-      box-shadow: 0 24px 60px rgba(30, 20, 60, 0.15);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      backdrop-filter: blur(16px);
       display: flex;
-      min-height: 680px;
+      min-height: 720px;
       overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      body { padding: 0; }
+      .app-shell { border-radius: 0; min-height: 100vh; flex-direction: column; }
     }
 
     /* ================= SIDEBAR ================= */
     .sidebar {
-  width: 210px;
-  flex-shrink: 0;
-  padding: 28px 18px;
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
-}
-   .sidebar-brand {
+      width: 220px;
+      flex-shrink: 0;
+      padding: 26px 16px;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, rgba(88,28,135,0.35) 0%, rgba(10,7,16,0.5) 100%);
+    }
+    @media (max-width: 900px) {
+      .sidebar { width: 100%; flex-direction: row; align-items: center; padding: 12px 16px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); overflow-x: auto; }
+      .sidebar-brand { flex-direction: row !important; margin-bottom: 0 !important; padding: 0 !important; }
+      .sidebar-brand .logo-img { height: 32px !important; }
+      .sidebar-sub { display: none; }
+      .sidebar-nav { flex-direction: row !important; flex: 0 0 auto; margin-left: auto; }
+      .sidebar-nav button span.nav-label { display: none; }
+    }
+
+    .sidebar-brand {
       display: flex; flex-direction: column; align-items: center; gap: 10px;
-      margin-bottom: 8px; padding: 8px 8px 20px; text-align: center;
+      margin-bottom: 6px; padding: 6px 8px 18px; text-align: center;
     }
-    .sidebar-brand .logo-img {
-      height: 100px; width: auto; object-fit: contain; flex-shrink: 0;
-      border-radius: 8px; background: #fff; padding: 4px;
-    }
-   .sidebar-brand span.brand-text {
-  font-weight: 800; font-size: 1rem; line-height: 1.3;
-  color: #fff;
-}
-    .sidebar-sub {
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.75);
-  padding: 0 8px 28px;
-}
+    .sidebar-brand .logo-img { height: 84px; width: auto; object-fit: contain; border-radius: 8px; background: #fff; padding: 4px; }
+    .sidebar-brand span.brand-text { font-weight: 800; font-size: 0.98rem; line-height: 1.3; color: #fff; }
+    .sidebar-sub { font-size: 0.68rem; color: var(--text-dim); padding: 0 8px 24px; text-align: center; }
 
     .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
     .sidebar-nav button {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px; border-radius: 12px; border: none; background: none;
-  color: rgba(255,255,255,0.85);
-  font-weight: 600; font-size: 0.88rem; text-align: left;
-  transition: background 0.15s, color 0.15s;
-}
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; border-radius: 12px; border: none; background: none;
+      color: var(--text-dim); font-weight: 600; font-size: 0.86rem; text-align: left;
+      transition: background 0.15s, color 0.15s; position: relative;
+    }
     .sidebar-nav button svg { width: 18px; height: 18px; flex-shrink: 0; }
-    .sidebar-nav button:hover {
-  background: rgba(255,255,255,0.15);
-}
-.sidebar-nav button.active-nav {
-  background: #fff;
-  color: var(--primary);
-}
+    .sidebar-nav button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar-nav button.active-nav {
+      background: linear-gradient(135deg, var(--active-1), var(--active-2));
+      color: #fff; box-shadow: 0 8px 18px rgba(239,68,68,0.3);
+    }
     .nav-badge {
-      margin-left: auto; background: var(--primary); color: #fff; font-size: 0.65rem;
-      font-weight: 700; padding: 1px 7px; border-radius: 999px;
+      margin-left: auto; background: var(--active-2); color: #fff; font-size: 0.62rem;
+      font-weight: 800; padding: 1px 7px; border-radius: 999px; flex-shrink: 0;
+    }
+    @media (max-width: 900px) {
+      .sidebar-nav button { padding: 8px 12px; flex-direction: column; gap: 2px; font-size: 0.62rem; }
+      .nav-badge { position: absolute; top: 2px; right: 2px; margin-left: 0; }
     }
 
     /* ================= MAIN PANEL ================= */
-    .main-panel { flex: 1; padding: 28px 34px; overflow-y: auto; }
+    .main-panel { flex: 1; padding: 26px 32px; overflow-y: auto; min-width: 0; }
+    @media (max-width: 900px) { .main-panel { padding: 18px 16px 80px; } }
 
-    /* ---- User selector bar ---- */
-    .user-select-bar {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
-      background: #fafaf9; border-radius: 16px; padding: 10px 16px; flex-wrap: wrap;
+    .top-bar-desktop {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 22px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 10px 16px;
     }
-    .user-select-bar label { font-size: 0.8rem; font-weight: 700; color: #57534e; flex-shrink: 0; }
-    .user-select-bar select {
-      flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 10px;
-      border: 1px solid var(--border); font-size: 0.88rem; font-weight: 600; background: #fff;
+    .top-bar-desktop label { font-size: 0.78rem; font-weight: 700; color: var(--text-dim); flex-shrink: 0; }
+    .top-bar-desktop select {
+      flex: 1; min-width: 200px; padding: 9px 12px; border-radius: 10px;
+      border: 1px solid var(--border); font-size: 0.86rem; font-weight: 600;
+      background: rgba(0,0,0,0.28); color: var(--text);
     }
-    .user-select-bar .avatar { flex-shrink: 0; }
+    .top-bar-desktop select option { background: #150c28; color: var(--text); }
 
-    .main-topbar {
-      display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 26px;
-      flex-wrap: wrap;
-    }
-    .btn {
-      padding: 9px 18px; border-radius: 999px; border: none; font-weight: 700; font-size: 0.85rem;
-      transition: transform 0.1s, background 0.15s;
-    }
+    .page-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .page-title-row h2 { font-size: 1.25rem; }
+
+    /* ================= BUTTONS ================= */
+    .btn { padding: 9px 18px; border-radius: 999px; border: none; font-weight: 700; font-size: 0.84rem; transition: transform .1s, filter .15s; }
     .btn:active { transform: scale(0.97); }
-    .btn-outline { background: #fff; border: 1.5px solid #e7e5e4; color: #44403c; }
-    .btn-outline:hover { background: #fafaf9; }
-    .btn-dark { background: var(--dark); color: #fff; }
-    .btn-dark:hover { background: #292524; }
-    .btn-dark:disabled { background: #d6d3d1; cursor: not-allowed; }
-    .btn-approve { background: #16a34a; color: #fff; }
-    .btn-approve:hover { background: #15803d; }
-    .btn-reject { background: #dc2626; color: #fff; }
-    .btn-reject:hover { background: #b91c1c; }
-    .btn-refresh { background: #fff; border: 1.5px solid #e7e5e4; color: #44403c; }
-    .btn-refresh:hover { background: #fafaf9; }
-    .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
-    .spin { animation: spin 0.8s linear infinite; display: inline-block; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .btn-outline { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.18); color: var(--text); }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); }
+    .btn-primary { background: linear-gradient(135deg, var(--purple-1), var(--pink)); color: #fff; box-shadow: 0 8px 20px rgba(139,92,246,0.35); }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-approve { background: #22c55e; color: #fff; }
+    .btn-approve:hover { background: #16a34a; }
+    .btn-reject { background: #ef4444; color: #fff; }
+    .btn-reject:hover { background: #dc2626; }
+    .btn-refresh { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.18); color: var(--text); }
+    .btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-block { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 13px; font-size: 0.88rem; }
+    .spin { animation: spin .8s linear infinite; display: inline-block; }
+    @keyframes spin { from{ transform: rotate(0);} to{ transform: rotate(360deg);} }
 
-    .analyze-banner {
-      background: #fafaf9; border: 1px dashed #e7e5e4; border-radius: 14px;
-      padding: 12px 16px; margin-bottom: 22px; font-size: 0.85rem; min-height: 20px;
-    }
-    .analyze-banner:empty { display: none; }
-    .error-box {
-      background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;
-      border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; white-space: pre-wrap;
-    }
-    .toast-note {
-      background: #ecfdf5; border: 1px solid #6ee7b7; color: #047857;
-      border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; margin-bottom: 14px;
-      display: none;
-    }
+    .error-box { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.35);
+      color: #fecaca; border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; white-space: pre-wrap; margin-bottom: 14px; }
+    .toast-note { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35);
+      color: #a7f3d0; border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; margin-bottom: 14px; display: none; }
     .toast-note.show { display: block; }
+    .empty-note { color: var(--text-dim); font-size: 0.85rem; padding: 6px 0; }
 
     /* ---- Avatar ---- */
     .avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center;
       font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
     .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .avatar-square { border-radius: 20px; }
-    .avatar-xs { width: 30px; height: 30px; font-size: 0.72rem; border-radius: 10px; }
+    .avatar-xs { width: 28px; height: 28px; font-size: 0.65rem; border-radius: 50%; border: 2px solid #150c28; margin-left: -9px; }
+    .avatar-xs:first-child { margin-left: 0; }
     .avatar-sm { width: 38px; height: 38px; font-size: 0.85rem; border-radius: 12px; }
-    .avatar-lg { width: 88px; height: 88px; font-size: 1.7rem; }
+    .avatar-lg { width: 76px; height: 76px; font-size: 1.5rem; }
 
-    /* ---- Profile header ---- */
-    .profile-header { display: flex; gap: 22px; align-items: flex-start; margin-bottom: 30px; }
-    .avatar-wrap { position: relative; flex-shrink: 0; }
-    .streak-flag {
-      position: absolute; top: -8px; right: -8px; width: 30px; height: 30px; border-radius: 50%;
-      background: linear-gradient(135deg, #fb923c, #ea580c); display: flex; align-items: center;
-      justify-content: center; box-shadow: 0 3px 8px rgba(234,88,12,0.4);
+    /* ================= HOME: PROFILE ROW ================= */
+    .profile-row-desktop { display: flex; align-items: center; gap: 18px; margin-bottom: 20px; }
+    .profile-name-block { flex: 1; min-width: 0; }
+    .profile-name-block h2 { font-size: 1.25rem; }
+    .profile-meta-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+    .profile-id-text { font-size: 0.78rem; color: var(--text-dim); font-family: 'Consolas', monospace; }
+    .copy-pill { font-size: 0.66rem; padding: 3px 12px; border-radius: 999px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16); color: var(--text-dim); font-weight: 700; }
+    .copy-pill:hover { background: rgba(255,255,255,0.15); }
+
+    /* ================= LEVEL HERO CARD ================= */
+    .level-hero-card {
+      border-radius: 24px; padding: 22px 26px; display: flex; gap: 20px; align-items: center;
+      background: linear-gradient(135deg, rgba(139,92,246,0.95), rgba(76,29,149,0.98));
+      border: 1px solid rgba(255,255,255,0.12); position: relative; overflow: hidden; margin-bottom: 20px;
     }
-    .streak-flag svg { width: 15px; height: 15px; color: #fff; }
+    .level-hero-card::before {
+      content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px;
+      border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+    }
+    .medal-badge-icon {
+      width: 78px; height: 78px; border-radius: 50%; flex-shrink: 0; position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.4), transparent 60%), rgba(0,0,0,0.25);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35), inset 0 0 16px rgba(255,255,255,0.12);
+    }
+    .level-hero-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+    .level-hero-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .level-hero-lv { font-size: 2.1rem; font-weight: 900; font-style: italic; line-height: 1;
+      background: linear-gradient(90deg, #fbcfe8, #e9d5ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .level-hero-link { font-size: 0.76rem; font-weight: 700; color: var(--gold); white-space: nowrap; background: none; border: none; padding: 0; }
+    .level-hero-caption { font-size: 0.8rem; color: rgba(255,255,255,0.78); margin: 10px 0 10px; }
+    .level-hero-caption .pend { color: var(--gold); font-weight: 700; }
+    .level-hero-track { height: 10px; border-radius: 999px; background: rgba(0,0,0,0.3); overflow: hidden; max-width: 460px; }
+    .level-hero-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #f472b6, #c084fc); transition: width .5s ease; }
 
-    .profile-info { flex: 1; min-width: 0; padding-top: 4px; }
-    .profile-info h2 { font-size: 1.35rem; }
-    .profile-info .sub { color: var(--text-muted); font-size: 0.82rem; margin: 2px 0 16px; }
+    /* ================= HOME GRID ================= */
+    .home-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 1000px) { .home-grid { grid-template-columns: 1fr; } }
 
-    .xp-bar-track { height: 11px; border-radius: 999px; background: #f1f1ef; overflow: hidden; }
-    .xp-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #f472b6, #f97316);
-      transition: width 0.5s ease; }
-    .xp-bar-labels { display: flex; justify-content: space-between; font-size: 0.72rem;
-      color: var(--text-muted); margin-top: 6px; }
-    .xp-bar-labels .pending { color: var(--primary); font-weight: 700; }
+    .dual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .dual-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
+    .dual-card-header { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+    .dual-card-title { font-weight: 800; font-size: 0.85rem; color: #fff; }
+    .dual-card-action { font-size: 0.64rem; color: var(--text-dim); cursor: pointer; }
+    .dual-card-action:hover { color: #fff; }
+    .dual-card-value { margin-top: 14px; font-size: 1.35rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+    .dual-card-value.badge-mode { color: #e9d5ff; font-size: 1.05rem; }
+    .dual-card-sub { font-size: 0.68rem; color: var(--text-dim); margin-top: 4px; }
 
-    /* ---- Stats row ---- */
-    .stats-row { display: flex; gap: 14px; margin-bottom: 30px; flex-wrap: wrap; }
-    .stat-pill { display: flex; align-items: center; gap: 12px; background: #fafaf9;
-      border-radius: 16px; padding: 12px 20px; flex: 1; min-width: 150px; }
-    .stat-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--dark);
-      display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
-    .stat-icon svg { width: 17px; height: 17px; }
-    .stat-value { font-weight: 800; font-size: 1.15rem; line-height: 1.1; }
-    .stat-label { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
-
-    /* ---- Cards grid ---- */
-    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-    @media (max-width: 760px) { .cards-grid { grid-template-columns: 1fr; } }
-    .info-card { background: #fafaf9; border-radius: 20px; padding: 22px; }
-    .info-card-header { display: flex; align-items: center; justify-content: space-between; }
+    /* ---- info card generic ---- */
+    .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 22px; margin-bottom: 20px; }
+    .info-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .info-card-header h4 { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
-    .count-badge { background: #e7e5e4; color: #57534e; font-size: 0.68rem; font-weight: 800;
-      padding: 2px 9px; border-radius: 999px; }
-    .mini-progress { height: 6px; background: #e7e5e4; border-radius: 999px; margin: 12px 0 18px; overflow: hidden; }
-    .mini-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #f472b6, #f97316); }
+    .count-badge { background: rgba(255,255,255,0.12); color: var(--text-dim); font-size: 0.68rem; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
 
-    /* ---- Achievements: XP bar per skill ---- */
-    .achievement-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #ececea; }
-    .achievement-row:last-child { border-bottom: none; }
-    .ach-icon-circle { width: 44px; height: 44px; border-radius: 12px; display: flex;
-      align-items: center; justify-content: center; flex-shrink: 0; }
-    .ach-icon-circle svg { width: 22px; height: 22px; }
-    .ach-info { flex: 1; min-width: 0; }
-    .ach-name-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-    .ach-name-row .name { font-weight: 700; font-size: 0.84rem; }
-    .ach-name-row .xp-text { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-    .ach-name-row .xp-text .pend { color: var(--primary); font-weight: 700; }
-    .ach-bar-track { height: 8px; background: #e7e5e4; border-radius: 999px; margin-top: 6px; overflow: hidden; }
-    .ach-bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
-    .empty-note { color: var(--text-muted); font-size: 0.85rem; padding: 6px 0; }
+    /* ---- Skill detail rows (desktop, inline, no modal) ---- */
+    .skill-detail-row { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; padding: 15px 16px; margin-bottom: 10px; }
+    .skill-detail-row:last-child { margin-bottom: 0; }
+    .sdr-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9px; gap: 8px; flex-wrap: wrap; }
+    .sdr-head .nm { font-weight: 700; font-size: 0.9rem; color: #fff; }
+    .sdr-head .xp { font-size: 0.74rem; color: var(--text-dim); }
+    .sdr-track { height: 8px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
+    .sdr-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+    .badge-shelf-mini { display: flex; gap: 12px; }
+    .bsm-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 90px; }
+    .bsm-circle { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .bsm-label { font-size: 0.66rem; color: var(--text-dim); text-align: center; }
 
-    .item-grid { display: flex; gap: 12px; justify-content: space-between; }
-    .item-grid.wrap { flex-wrap: wrap; justify-content: flex-start; }
-    .item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 64px; }
-    .item-icon-circle { width: 54px; height: 54px; border-radius: 16px; display: flex;
-      align-items: center; justify-content: center; }
-    .item-icon-circle.locked { background: #f1f1ef !important; }
-    .item-icon-circle svg { width: 24px; height: 24px; }
-    .item-label { font-size: 0.72rem; font-weight: 700; color: #44403c; text-align: center; line-height: 1.3; }
-    .item-label small { display: block; color: var(--text-muted); font-weight: 500; font-size: 0.65rem; }
+    /* ---- Upload / Focus card (inline, desktop) ---- */
+    .focus-loading { display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-size: 0.85rem; padding: 12px 0; }
+    .focus-spinner { width: 22px; height: 22px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: var(--purple-2); animation: spin .8s linear infinite; flex-shrink: 0; }
+    .focus-success { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: #a7f3d0;
+      border-radius: 12px; padding: 14px; font-size: 0.85rem; margin-bottom: 14px; text-align: center; font-weight: 700; }
+    .focus-tag { background: rgba(168,85,247,0.18); color: #d8b4fe; font-size: 0.7rem; font-weight: 800;
+      padding: 4px 12px; border-radius: 999px; display: inline-block; margin-bottom: 12px; }
+    .focus-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .focus-result-stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 12px; text-align: center; }
+    .frs-label { font-size: 0.66rem; color: var(--text-dim-2); text-transform: uppercase; letter-spacing: 0.03em; }
+    .frs-value { font-size: 0.92rem; font-weight: 800; color: #fff; margin-top: 3px; }
+    .focus-xp-box { background: linear-gradient(135deg, var(--purple-1), var(--pink)); border-radius: 16px;
+      padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .focus-xp-box span:first-child { color: rgba(255,255,255,0.85); font-weight: 700; font-size: 0.8rem; }
+    .focus-xp-value { font-size: 1.5rem; font-weight: 900; color: #fff; }
 
-    .view-all-link { display: block; text-align: center; margin-top: 16px; font-size: 0.78rem;
-      color: var(--text-muted); cursor: pointer; text-decoration: underline; }
-    .view-all-link:hover { color: var(--primary); }
-
-    /* ---- Inventory: clickable list ---- */
-    .inventory-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; padding-right: 4px; }
+    /* ---- Inventory (desktop, inline list) ---- */
+    .inventory-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
     .inventory-row {
-      display: flex; align-items: center; gap: 12px; background: #fff;
-      border: 1px solid var(--border); border-radius: 12px; padding: 9px 12px;
-      cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s;
+      display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+      cursor: pointer; transition: background .15s;
     }
-    .inventory-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); border-color: #e7e5e4; }
-    .inventory-row .idx { font-size: 0.68rem; color: var(--text-muted); width: 18px; text-align: center; font-weight: 700; flex-shrink: 0; }
-    .icon-circle-sm { width: 34px; height: 34px; border-radius: 10px; display: flex;
-      align-items: center; justify-content: center; flex-shrink: 0; }
+    .inventory-row:hover { background: rgba(255,255,255,0.08); }
+    .inventory-row .idx { font-size: 0.68rem; color: var(--text-dim); width: 18px; text-align: center; font-weight: 700; flex-shrink: 0; }
+    .icon-circle-sm { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; }
     .icon-circle-sm svg { width: 16px; height: 16px; }
     .inventory-row .info { flex: 1; min-width: 0; }
-    .inventory-row .info .title { font-size: 0.82rem; font-weight: 700; }
-    .inventory-row .info .date { font-size: 0.68rem; color: var(--text-muted); }
-    .status-tag { font-size: 0.66rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
-    .inventory-empty { color: var(--text-muted); font-size: 0.85rem; padding: 8px 0; }
-    .chevron { color: #d6d3d1; flex-shrink: 0; }
+    .inventory-row .info .title { font-size: 0.84rem; font-weight: 700; color: #fff; }
+    .inventory-row .info .date { font-size: 0.7rem; color: var(--text-dim); }
+    .status-tag { font-size: 0.68rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+    .inventory-empty { color: var(--text-dim); font-size: 0.85rem; padding: 8px 0; }
+    .chevron { color: rgba(255,255,255,0.25); flex-shrink: 0; }
 
     /* ================= ADMIN VIEW ================= */
-    .admin-tabs {
-      display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--border);
-    }
+    .admin-tabs { display: flex; gap: 6px; margin-bottom: 22px; border-bottom: 1px solid var(--border); }
     .admin-tab-btn {
       padding: 10px 20px; border: none; background: none; cursor: pointer;
-      font-weight: 700; font-size: 0.88rem; color: var(--text-muted);
+      font-weight: 700; font-size: 0.86rem; color: var(--text-dim);
       border-bottom: 2.5px solid transparent; margin-bottom: -1px;
-      display: flex; align-items: center; gap: 8px; transition: color 0.15s, border-color 0.15s;
+      display: flex; align-items: center; gap: 8px; transition: color .15s, border-color .15s;
     }
-    .admin-tab-btn:hover { color: #44403c; }
-    .admin-tab-btn.active-tab { color: var(--primary); border-bottom-color: var(--primary); }
-    .admin-tab-btn .nav-badge { margin-left: 0; }
+    .admin-tab-btn:hover { color: #fff; }
+    .admin-tab-btn.active-tab { color: var(--purple-2); border-bottom-color: var(--purple-2); }
     .admin-tab-content { display: none; }
     .admin-tab-content.active-tab-content { display: block; }
 
-    .admin-form-input {
-      padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
-      font-size: 0.88rem; width: 100%; background: #fff;
-    }
-    .admin-form-row { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+    .admin-form-input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 0.86rem; width: 100%; background: rgba(0,0,0,0.28); color: var(--text); }
+    .admin-form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end; }
+    @media (max-width: 760px) { .admin-form-row { grid-template-columns: 1fr; } }
     .admin-form-field { display: flex; flex-direction: column; gap: 6px; }
-    .admin-form-field .field-label { font-size: 0.72rem; font-weight: 700; color: #57534e; }
+    .admin-form-field .field-label { font-size: 0.72rem; font-weight: 700; color: var(--text-dim); }
 
-    .pending-card { background: #fafaf9; border-radius: 16px; padding: 14px 18px; margin-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .pending-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 18px;
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .pending-info-row { display: flex; align-items: center; gap: 12px; }
-    .pending-info { font-size: 0.85rem; line-height: 1.5; }
+    .pending-info { font-size: 0.85rem; line-height: 1.5; color: var(--text); }
     .pending-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .pending-actions .btn { padding: 7px 14px; font-size: 0.78rem; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center;
-      justify-content: center; padding: 16px; }
-    .modal-box { background: #fff; border-radius: 20px; padding: 24px; max-width: 560px; width: 100%;
-      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-    .modal-box label { display: block; margin: 12px 0 5px; font-weight: 700; font-size: 0.82rem; color: #57534e; }
-    .modal-box select { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.9rem; }
-    .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
-    .modal-actions .btn { flex: 1; padding: 10px; }
-
-    .view-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .view-modal-header .info h3 { font-size: 1rem; }
-    .view-modal-header .info .sub { font-size: 0.78rem; color: var(--text-muted); }
-    .view-field-label { font-size: 0.72rem; font-weight: 800; color: #78716c; text-transform: uppercase;
-      letter-spacing: 0.03em; margin: 14px 0 6px; }
-    .ocr-text-box { background: #fafaf9; border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px 14px; font-size: 0.82rem; white-space: pre-wrap; max-height: 160px; overflow-y: auto; line-height: 1.5; }
-
-    /* ================= SEARCH VIEW ================= */
-    .search-bar { display: flex; gap: 10px; margin-bottom: 22px; }
+    /* ================= SEARCH ================= */
+    .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
     .search-bar input { flex: 1; padding: 11px 16px; border-radius: 999px; border: 1.5px solid var(--border);
-      font-size: 0.9rem; }
-    .search-card { background: #fafaf9; border-radius: 18px; padding: 18px 20px; margin-bottom: 14px; }
+      font-size: 0.88rem; background: rgba(255,255,255,0.06); color: var(--text); }
+    .search-bar input::placeholder { color: var(--text-dim-2); }
+    .search-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .search-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px 18px; }
     .search-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-    .search-card-header h4 small { color: var(--text-muted); font-weight: 400; font-size: 0.75rem; display: block; }
+    .search-card-header h4 small { color: var(--text-dim); font-weight: 400; font-size: 0.75rem; display: block; }
     .skill-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-    .skill-tag { background: #ffedd5; color: #9a3412; font-size: 0.72rem; font-weight: 700;
-      padding: 4px 12px; border-radius: 999px; border: 1px solid #fed7aa; }
-    .skill-tag-empty { background: #f1f1ef; color: var(--text-muted); border-color: #e7e5e4; }
+    .skill-tag { background: rgba(168,85,247,0.15); color: #d8b4fe; font-size: 0.72rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(168,85,247,0.35); }
+    .skill-tag-empty { background: rgba(255,255,255,0.06); color: var(--text-dim); border-color: rgba(255,255,255,0.1); }
 
-    /* ================= DASHBOARD VIEW ================= */
+    /* ================= DASHBOARD ================= */
+    .stats-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+    .stat-pill { display: flex; align-items: center; gap: 12px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 16px; padding: 12px 20px; flex: 1; min-width: 150px; }
+    .stat-icon { width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-1), var(--pink));
+      display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+    .stat-icon svg { width: 17px; height: 17px; }
+    .stat-value { font-weight: 800; font-size: 1.15rem; line-height: 1.1; color: #fff; }
+    .stat-label { font-size: 0.68rem; color: var(--text-dim); margin-top: 1px; }
+
     .dash-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
     @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
 
     .dash-skill-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; }
-    .dash-skill-row .name { width: 70px; font-size: 0.82rem; font-weight: 700; flex-shrink: 0; }
-    .dash-skill-row .bar-track { flex: 1; height: 10px; background: #e7e5e4; border-radius: 999px; overflow: hidden; }
-    .dash-skill-row .bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
-    .dash-skill-row .count { width: 34px; text-align: right; font-size: 0.78rem; color: var(--text-muted); font-weight: 700; flex-shrink: 0; }
+    .dash-skill-row .name { width: 70px; font-size: 0.82rem; font-weight: 700; flex-shrink: 0; color: var(--text); }
+    .dash-skill-row .bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; }
+    .dash-skill-row .bar-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+    .dash-skill-row .count { width: 34px; text-align: right; font-size: 0.78rem; color: var(--text-dim); font-weight: 700; flex-shrink: 0; }
 
-    .leaderboard-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid #ececea; }
+    .leaderboard-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .leaderboard-row:last-child { border-bottom: none; }
     .lb-rank { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 800; flex-shrink: 0; background: #e7e5e4; color: #57534e; }
-    .lb-rank.rank-1 { background: #fef9c3; color: #b45309; }
-    .lb-rank.rank-2 { background: #f1f1ef; color: #57534e; }
-    .lb-rank.rank-3 { background: #ffedd5; color: #9a3412; }
+      font-size: 0.75rem; font-weight: 800; flex-shrink: 0; background: rgba(255,255,255,0.1); color: var(--text-dim); }
+    .lb-rank.rank-1 { background: rgba(251,191,36,0.2); color: var(--gold); }
+    .lb-rank.rank-2 { background: rgba(255,255,255,0.14); color: #e5e7eb; }
+    .lb-rank.rank-3 { background: rgba(234,88,12,0.2); color: #fb923c; }
     .lb-info { flex: 1; min-width: 0; }
-    .lb-info .name { font-size: 0.85rem; font-weight: 700; }
-    .lb-info .dept { font-size: 0.7rem; color: var(--text-muted); }
+    .lb-info .name { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .lb-info .dept { font-size: 0.7rem; color: var(--text-dim); }
     .lb-xp { text-align: right; flex-shrink: 0; }
-    .lb-xp .xp-num { font-weight: 800; font-size: 0.88rem; }
-    .lb-xp .lv-label { font-size: 0.68rem; color: var(--text-muted); }
+    .lb-xp .xp-num { font-weight: 800; font-size: 0.88rem; color: #fff; }
+    .lb-xp .lv-label { font-size: 0.68rem; color: var(--text-dim); }
 
-    /* ================= SKILL GAP ANALYSIS ================= */
     .gap-skill-row { margin-bottom: 16px; }
     .gap-skill-row:last-child { margin-bottom: 0; }
-    .gap-skill-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; flex-wrap:wrap; gap:4px; }
-    .gap-skill-header .name { font-weight:700; font-size:0.85rem; }
-    .gap-skill-header .xp-text { font-size:0.72rem; color:var(--text-muted); }
-    .gap-skill-header .xp-text .pending { color:var(--primary); font-weight:700; }
-    .gap-bar-track { height:12px; background:#f1f1ef; border-radius:999px; overflow:hidden; position:relative; }
-    .gap-bar-fill { height:100%; border-radius:999px; transition:width .5s ease; }
-    .gap-bar-fill.low { background: linear-gradient(90deg,#f87171,#dc2626); }
+    .gap-skill-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; }
+    .gap-skill-header .name { font-weight: 700; font-size: 0.85rem; color: var(--text); }
+    .gap-skill-header .xp-text { font-size: 0.72rem; color: var(--text-dim); }
+    .gap-skill-header .xp-text .pending { color: var(--purple-2); font-weight: 700; }
+    .gap-bar-track { height: 12px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; position: relative; }
+    .gap-bar-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+    .gap-bar-fill.low { background: linear-gradient(90deg,#f87171,#ef4444); }
     .gap-bar-fill.mid { background: linear-gradient(90deg,#fbbf24,#f59e0b); }
-    .gap-bar-fill.high { background: linear-gradient(90deg,#4ade80,#16a34a); }
-    .gap-projected-marker { position:absolute; top:-2px; bottom:-2px; width:2px; background:#57534e; opacity:0.55; }
+    .gap-bar-fill.high { background: linear-gradient(90deg,#34d399,#10b981); }
+    .gap-projected-marker { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; opacity: .6; }
 
-    .gap-alert-card { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #fed7aa;
-      border-left:4px solid #dc2626; border-radius:12px; padding:12px 14px; margin-bottom:10px; }
-    .gap-alert-card:last-child { margin-bottom:0; }
-    .gap-alert-card .gap-icon { width:36px;height:36px;border-radius:10px;background:#fee2e2;color:#dc2626;
-      display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-    .gap-alert-card .gap-text { flex:1; font-size:0.82rem; line-height:1.5; }
-    .gap-alert-card .gap-text strong { color:#991b1b; }
-    .gap-alert-card .gap-pct { font-weight:800; font-size:0.95rem; color:#dc2626; flex-shrink:0; }
+    .gap-alert-card { display: flex; align-items: center; gap: 12px; background: var(--card);
+      border: 1px solid rgba(248,113,113,0.35); border-left: 4px solid var(--danger); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 10px; }
+    .gap-alert-card:last-child { margin-bottom: 0; }
+    .gap-alert-card .gap-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(248,113,113,0.15); color: var(--danger);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .gap-alert-card .gap-text { flex: 1; font-size: 0.82rem; line-height: 1.5; color: var(--text); }
+    .gap-alert-card .gap-text strong { color: #fca5a5; }
+    .gap-alert-card .gap-pct { font-weight: 800; font-size: 0.95rem; color: var(--danger); flex-shrink: 0; }
 
-    .dept-coverage-row { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #ececea; }
-    .dept-coverage-row:last-child { border-bottom:none; }
-    .dept-coverage-row .dept-name { width:110px; font-size:0.8rem; font-weight:700; flex-shrink:0; }
-    .dept-coverage-row .bar-track { flex:1; height:10px; background:#e7e5e4; border-radius:999px; overflow:hidden; }
-    .dept-coverage-row .bar-fill { height:100%; border-radius:999px; transition:width .5s ease; }
-    .dept-coverage-row .pct-label { width:44px; text-align:right; font-size:0.78rem; font-weight:700; color:var(--text-muted); flex-shrink:0; }
+    .dept-coverage-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .dept-coverage-row:last-child { border-bottom: none; }
+    .dept-coverage-row .dept-name { width: 110px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; color: var(--text); }
+    .dept-coverage-row .bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; }
+    .dept-coverage-row .bar-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+    .dept-coverage-row .pct-label { width: 44px; text-align: right; font-size: 0.78rem; font-weight: 700; color: var(--text-dim); flex-shrink: 0; }
+
+    /* ================= MODALS ================= */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); z-index: 2000; display: none; align-items: center;
+      justify-content: center; padding: 16px; }
+    .modal-box { background: #150c28; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px;
+      max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .modal-box label { display: block; margin: 12px 0 5px; font-weight: 700; font-size: 0.82rem; color: var(--text-dim); }
+    .modal-box select { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 0.9rem; background: rgba(0,0,0,0.3); color: var(--text); }
+    .modal-box select option { background: #150c28; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+    .modal-actions .btn { flex: 1; padding: 10px; }
+
+    .view-field-label { font-size: 0.72rem; font-weight: 800; color: var(--text-dim-2); text-transform: uppercase;
+      letter-spacing: 0.03em; margin: 14px 0 6px; }
+    .ocr-text-box { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; font-size: 0.82rem; white-space: pre-wrap; max-height: 160px; overflow-y: auto; line-height: 1.5; color: var(--text); }
 
     /* ================= XP POPUP ================= */
     .xp-popup {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
-      background: linear-gradient(135deg, #f472b6, #f97316); color: #fff; font-weight: 800;
+      background: linear-gradient(135deg, var(--purple-1), var(--pink)); color: #fff; font-weight: 800;
       font-size: 2rem; padding: 20px 36px; border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(234,88,12,0.4); opacity: 0; pointer-events: none; z-index: 3000;
+      box-shadow: 0 10px 30px rgba(139,92,246,0.5); opacity: 0; pointer-events: none; z-index: 3000;
     }
     .xp-popup.show { animation: xpPopIn 1.6s ease forwards; }
     @keyframes xpPopIn {
@@ -380,29 +416,29 @@
 
     <!-- ================= SIDEBAR ================= -->
     <div class="sidebar">
-       <div class="sidebar-brand">
+      <div class="sidebar-brand">
         <img class="logo-img" src="https://www.kku.ac.th/wp-content/uploads/2022/01/1.-official-logo-2022-26.png" alt="KKU Logo">
         <span class="brand-text">KKU-NextTalent</span>
       </div>
-      <div class="sidebar-sub" style="text-align:center; padding: 0 8px 28px;">ระบบสะสม XP &amp; ทักษะ</div>
+      <div class="sidebar-sub">ระบบสะสม XP &amp; ทักษะ</div>
 
       <div class="sidebar-nav">
         <button class="active-nav" onclick="switchView('home')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19h4V9H4v10zm6 0h4V5h-4v14zm6 0h4v-7h-4v7z"/></svg>
-          หน้าหลัก
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M9 21V12h6v9"/></svg>
+          <span class="nav-label">หน้าหลัก</span>
         </button>
         <button onclick="switchView('dashboard')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-          แดชบอร์ด
-        </button>
-        <button onclick="switchView('admin')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13l-1.5 7h13L17 13M7 13L5 5h1.5M7 13h10M6.5 5H19l-2 8"/><circle cx="8" cy="20" r="1"/><circle cx="16" cy="20" r="1"/></svg>
-          Admin
-          <span class="nav-badge" id="pendingBadgeCount" style="display:none;">0</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.3"/><rect x="14" y="3" width="7" height="7" rx="1.3"/><rect x="3" y="14" width="7" height="7" rx="1.3"/><rect x="14" y="14" width="7" height="7" rx="1.3"/></svg>
+          <span class="nav-label">แดชบอร์ด</span>
         </button>
         <button onclick="switchView('search')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          ค้นหา
+          <span class="nav-label">ค้นหา</span>
+        </button>
+        <button onclick="switchView('admin')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span class="nav-label">Admin</span>
+          <span class="nav-badge hidden" id="pendingBadgeCount">0</span>
         </button>
       </div>
     </div>
@@ -413,8 +449,8 @@
       <!-- ---------------- VIEW: หน้าหลัก ---------------- -->
       <div id="view-home" class="view-content">
 
-        <div class="user-select-bar">
-          <div class="avatar avatar-sm" id="topAvatar" style="background:#e7e5e4;"></div>
+        <div class="top-bar-desktop">
+          <div class="avatar avatar-sm" id="topAvatar" style="background:rgba(255,255,255,.08);">👤</div>
           <label for="userSelect">เลือก User:</label>
           <select id="userSelect"></select>
           <button class="btn btn-refresh" id="refreshBtn" onclick="refreshCurrentUser()" title="โหลดข้อมูลล่าสุดของ user คนนี้">
@@ -422,45 +458,57 @@
           </button>
         </div>
 
-        <div class="main-topbar">
-          <input type="file" id="pdfFile" accept="application/pdf" class="hidden" onchange="analyzeCertificate()">
-          <button class="btn btn-outline" onclick="document.getElementById('pdfFile').click()">📄 อัพโหลดใบรับรอง</button>
-          <button class="btn btn-dark" id="submitBtn" style="display:none" onclick="submitResult()">✅ ส่งผล</button>
-        </div>
-
+        <div id="homeErrorBanner"></div>
         <div id="autoRefreshNote" class="toast-note">🔔 ข้อมูลอัปเดตอัตโนมัติ — มีรายการที่ Admin เพิ่งอนุมัติ/ปฏิเสธ</div>
-        <div id="analyzeResult" class="analyze-banner"></div>
 
-        <div class="profile-header" id="profileHeader">
-          <p style="color:var(--text-muted)">กรุณาเลือก user จากด้านบน</p>
-        </div>
+        <div id="emptyStateBanner" class="empty-note" style="padding:40px 0;text-align:center;">👆 กรุณาเลือก User จากด้านบนเพื่อเริ่มต้นใช้งาน</div>
 
-        <div class="stats-row" id="statsRow"></div>
-
-        <div class="cards-grid">
-          <div class="info-card">
-            <div class="info-card-header">
-              <h4>🏅 Achievements <span class="count-badge" id="achCount">0</span></h4>
+        <div id="homeContent" class="hidden">
+          <div class="profile-row-desktop">
+            <div class="avatar avatar-lg" id="profileAvatarDesktop" style="background:rgba(255,255,255,.08);"></div>
+            <div class="profile-name-block">
+              <h2 id="profileNameText">-</h2>
+              <div class="profile-meta-row" id="profileMetaRow"></div>
             </div>
-            <div class="mini-progress"><div class="mini-progress-fill" id="achProgress" style="width:0%"></div></div>
-            <div id="achievementsGrid"></div>
-            <div class="item-grid wrap hidden" id="achievementsExtra" style="margin-top:16px;"></div>
-            <span class="view-all-link hidden" onclick="toggleAchExtra()" id="achViewAllBtn">ดู badge shelf ทั้งหมด</span>
           </div>
 
-          <div class="info-card">
-            <div class="info-card-header">
-              <h4>📦 Inventory <span class="count-badge" id="invCount">0</span></h4>
+          <div id="levelHeroCard"></div>
+
+          <div class="home-grid">
+            <!-- LEFT: ทักษะของฉัน -->
+            <div>
+              <div class="info-card">
+                <div class="info-card-header"><h4>🎯 ทักษะของฉัน <span class="count-badge" id="skillCount">0</span></h4></div>
+                <div id="skillDetailSection"></div>
+              </div>
+
+              <div class="info-card" style="margin-bottom:0;">
+                <div class="info-card-header"><h4>🎒 คลังใบรับรอง <span class="count-badge" id="invCount">0</span></h4></div>
+                <div class="inventory-list" id="inventoryList"></div>
+              </div>
             </div>
-            <div class="mini-progress"><div class="mini-progress-fill" id="invProgress" style="width:0%"></div></div>
-            <div class="inventory-list" id="inventoryList"></div>
+
+            <!-- RIGHT: dual cards + upload -->
+            <div>
+              <div class="dual-row" id="dualCardRow"></div>
+
+              <div class="info-card" style="margin-bottom:0;">
+                <div class="info-card-header" style="margin-bottom:14px;"><h4>📤 อัพโหลดใบรับรองใหม่</h4></div>
+                <div id="uploadCardBody">
+                  <p class="empty-note" style="margin-bottom:14px;">เลือกไฟล์ PDF เพื่อสแกนและวิเคราะห์ทักษะด้วย AI</p>
+                  <button class="btn btn-primary btn-block" onclick="document.getElementById('pdfFile').click()">📄 เลือกไฟล์ PDF</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <input type="file" id="pdfFile" accept="application/pdf" class="hidden" onchange="analyzeCertificate()">
       </div>
 
       <!-- ---------------- VIEW: แดชบอร์ด ---------------- -->
       <div id="view-dashboard" class="view-content hidden">
-        <div class="main-topbar" style="justify-content:space-between;margin-bottom:24px;">
+        <div class="page-title-row">
           <h2>📊 แดชบอร์ดภาพรวมระบบ</h2>
           <button class="btn btn-outline" onclick="loadDashboard()">🔄 รีเฟรช</button>
         </div>
@@ -472,15 +520,13 @@
             <div class="info-card-header"><h4>🥇 Leaderboard Top 5 (XP ที่อนุมัติแล้ว)</h4></div>
             <div id="leaderboardList" style="margin-top:10px;"></div>
           </div>
-
           <div class="info-card">
             <div class="info-card-header"><h4>📈 สัดส่วนทักษะ (approved)</h4></div>
             <div id="skillDistribution" style="margin-top:10px;"></div>
           </div>
         </div>
 
-        <!-- ================= SKILL GAP ANALYSIS ================= -->
-        <div class="info-card" style="margin-top:20px;">
+        <div class="info-card">
           <div class="info-card-header">
             <h4>🎯 Skill Gap Analysis (เทียบกับเป้าหมายที่ตั้งไว้)</h4>
             <button class="btn btn-outline" onclick="loadSkillGapAnalysis()" style="padding:6px 14px;font-size:0.75rem;">🔄 รีเฟรช</button>
@@ -488,12 +534,11 @@
           <div id="skillGapOrgSummary" style="margin-top:14px;"></div>
         </div>
 
-        <div class="dash-grid" style="margin-top:20px;">
+        <div class="dash-grid">
           <div class="info-card">
             <div class="info-card-header"><h4>🚨 จุดที่ต้องเร่งพัฒนา (Critical Gaps)</h4></div>
             <div id="criticalGapsList" style="margin-top:10px;"></div>
           </div>
-
           <div class="info-card">
             <div class="info-card-header"><h4>🏢 ความพร้อมแยกตามหน่วยงาน</h4></div>
             <div id="deptCoverageList" style="margin-top:10px;"></div>
@@ -501,14 +546,14 @@
         </div>
       </div>
 
-      <!-- ---------------- VIEW: Admin (แบบ Tab) ---------------- -->
+      <!-- ---------------- VIEW: Admin ---------------- -->
       <div id="view-admin" class="view-content hidden">
-        <h2 style="margin-bottom:20px;">🛠 หน้า Admin</h2>
+        <div class="page-title-row"><h2>🛠 หน้า Admin</h2></div>
 
         <div class="admin-tabs">
           <button class="admin-tab-btn active-tab" data-tab="pending" onclick="switchAdminTab('pending')">
             📋 รายการรออนุมัติ
-            <span class="nav-badge" id="pendingTabBadge" style="display:none;">0</span>
+            <span class="nav-badge hidden" id="pendingTabBadge">0</span>
           </button>
           <button class="admin-tab-btn" data-tab="addUser" onclick="switchAdminTab('addUser')">
             ➕ เพิ่ม User ใหม่
@@ -516,7 +561,7 @@
         </div>
 
         <div id="admin-tab-pending" class="admin-tab-content active-tab-content">
-          <div class="main-topbar" style="justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
             <h3 style="margin:0;">รายการรออนุมัติ</h3>
             <button class="btn btn-outline" onclick="loadPendingSubmissions()">🔄 รีเฟรช</button>
           </div>
@@ -524,10 +569,9 @@
         </div>
 
         <div id="admin-tab-addUser" class="admin-tab-content">
-          <div class="info-card">
+          <div class="info-card" style="margin-bottom:0;">
             <div class="info-card-header"><h4>➕ เพิ่ม User ใหม่</h4></div>
-
-            <div class="admin-form-row">
+            <div class="admin-form-row" style="margin-top:16px;">
               <div class="admin-form-field">
                 <div class="field-label">ชื่อ-นามสกุล *</div>
                 <input type="text" id="newUserName" class="admin-form-input" placeholder="เช่น มานะ ใจดี">
@@ -540,19 +584,19 @@
                 <div class="field-label">ลิงก์รูปโปรไฟล์ (ไม่บังคับ)</div>
                 <input type="text" id="newUserPhoto" class="admin-form-input" placeholder="https://...">
               </div>
-              <div id="addUserError"></div>
-              <button class="btn btn-dark" onclick="addNewUser()" style="align-self:flex-start;">➕ เพิ่ม User</button>
             </div>
+            <div id="addUserError" style="margin-top:12px;"></div>
+            <button class="btn btn-primary" onclick="addNewUser()" style="margin-top:14px;">➕ เพิ่ม User</button>
           </div>
         </div>
       </div>
 
       <!-- ---------------- VIEW: ค้นหา ---------------- -->
       <div id="view-search" class="view-content hidden">
-        <h2 style="margin-bottom:18px;">🔍 ค้นหาบุคลากรตามทักษะ</h2>
+        <div class="page-title-row"><h2>🔍 ค้นหาบุคลากรตามทักษะ</h2></div>
         <div class="search-bar">
           <input type="text" id="searchInput" placeholder="ค้นหาชื่อ หรือทักษะ (IT / บริหาร / ทั่วไป)" oninput="onSearchInput()">
-          <button class="btn btn-dark" onclick="performSearch()">ค้นหา</button>
+          <button class="btn btn-primary" onclick="performSearch()">ค้นหา</button>
         </div>
         <div id="searchResults">กำลังโหลด...</div>
       </div>
@@ -565,17 +609,13 @@
     <div class="modal-box">
       <h3 style="margin-bottom:14px;">ตรวจสอบ / แก้ไขรายการ</h3>
       <div id="modalFilePreview"></div>
-
       <label for="modalSkillSelect">ทักษะ (skill)</label>
       <select id="modalSkillSelect"></select>
-
       <label for="modalLevelSelect">ระดับ (level)</label>
       <select id="modalLevelSelect"></select>
-
       <div id="modalEditError" style="margin-top:10px;"></div>
-
       <div class="modal-actions">
-        <button class="btn btn-dark" onclick="saveModalEdit()">💾 บันทึกการแก้</button>
+        <button class="btn btn-primary" onclick="saveModalEdit()">💾 บันทึกการแก้</button>
         <button class="btn btn-outline" onclick="closeModal()">ปิด</button>
       </div>
     </div>
@@ -595,15 +635,14 @@
 
   <script>
     /* ==================================================================
-     * ICON SET
+     * ICON / BADGE / AVATAR HELPERS
      * ================================================================== */
     const ICONS = {
-      flag:  '<path d="M5 21V4h11l-2 4 2 4H5" stroke-linejoin="round"/>',
-      target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.7" fill="currentColor"/>',
       check: '<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>',
       clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2" stroke-linecap="round"/>',
       cross: '<path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>',
       chevronRight: '<path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>',
+      target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.7" fill="currentColor"/>',
       users: '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
       docs: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'
     };
@@ -613,27 +652,18 @@
     }
 
     const BADGE_TIERS = [
-      { name: 'Rookie', minLevel: 1, color: '#65a30d', bg: '#ecfccb',
-        path: 'M12 21V10M12 10C12 6 9 4 5 4c0 4 3 7 7 7zM12 10c0-3 2-5 5-5 0 3-2 5-5 5z' },
-      { name: 'Rising Star', minLevel: 5, color: '#f59e0b', bg: '#fef3c7',
-        path: 'M12 2l2.9 6.9L22 9.6l-5.5 5.1L18 22l-6-3.6L6 22l1.5-7.3L2 9.6l7.1-0.7L12 2z' },
-      { name: 'Expert', minLevel: 10, color: '#ea580c', bg: '#ffedd5',
-        path: 'M12 2c-3 4-6 7-6 11a6 6 0 0 0 12 0c0-2-1-3.5-2-5 .5 2-1 3-2 2 .5-2-1-4-2-8z' },
-      { name: 'Master', minLevel: 20, color: '#eab308', bg: '#fef9c3',
-        path: 'M3 8l4 4 5-7 5 7 4-4-2 10H5L3 8z' }
+      { name: 'Rookie', minLevel: 1, color: '#65a30d', path: 'M12 21V10M12 10C12 6 9 4 5 4c0 4 3 7 7 7zM12 10c0-3 2-5 5-5 0 3-2 5-5 5z' },
+      { name: 'Rising Star', minLevel: 5, color: '#f59e0b', path: 'M12 2l2.9 6.9L22 9.6l-5.5 5.1L18 22l-6-3.6L6 22l1.5-7.3L2 9.6l7.1-0.7L12 2z' },
+      { name: 'Expert', minLevel: 10, color: '#ea580c', path: 'M12 2c-3 4-6 7-6 11a6 6 0 0 0 12 0c0-2-1-3.5-2-5 .5 2-1 3-2 2 .5-2-1-4-2-8z' },
+      { name: 'Master', minLevel: 20, color: '#eab308', path: 'M3 8l4 4 5-7 5 7 4-4-2 10H5L3 8z' }
     ];
-    function tierFor(level) {
-      return [...BADGE_TIERS].reverse().find(t => level >= t.minLevel) || BADGE_TIERS[0];
-    }
+    function tierFor(level) { return [...BADGE_TIERS].reverse().find(t => level >= t.minLevel) || BADGE_TIERS[0]; }
     function badgeSvg(path, color, size) {
       size = size || 24;
       return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${color}"><path d="${path}"/></svg>`;
     }
 
-    /* ==================================================================
-     * AVATAR
-     * ================================================================== */
-    const AVATAR_COLORS = ['#ea580c','#f59e0b','#65a30d','#0891b2','#7c3aed','#db2777','#e11d48','#0d9488'];
+    const AVATAR_COLORS = ['#8b5cf6','#ec4899','#22d3ee','#34d399','#fbbf24','#f472b6','#a855f7','#0ea5e9'];
     function pickAvatarColor(seed) {
       var hash = 0;
       for (var i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) & 0xffffffff;
@@ -642,24 +672,20 @@
     function getInitials(name) {
       if (!name) return '?';
       var parts = name.trim().split(/\s+/);
-      return parts.length === 1 ? parts[0].charAt(0).toUpperCase()
-        : (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+      return parts.length === 1 ? parts[0].charAt(0).toUpperCase() : (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
     }
     function avatarHtml(name, userId, photoUrl, sizeClass, square) {
       sizeClass = sizeClass || '';
       var shapeClass = square ? 'avatar-square' : '';
-      if (photoUrl) {
-        return `<div class="avatar ${sizeClass} ${shapeClass}"><img src="${photoUrl}" alt="${name}"></div>`;
-      }
+      if (photoUrl) return `<div class="avatar ${sizeClass} ${shapeClass}"><img src="${photoUrl}" alt="${name}"></div>`;
       var color = pickAvatarColor(userId || name || 'x');
       return `<div class="avatar ${sizeClass} ${shapeClass}" style="background:${color}">${getInitials(name)}</div>`;
     }
     function setAvatarInto(elId, name, userId, photoUrl, sizeClass) {
       const el = document.getElementById(elId);
       if (!el) return;
-      const html = avatarHtml(name, userId, photoUrl, sizeClass);
       const tmp = document.createElement('div');
-      tmp.innerHTML = html;
+      tmp.innerHTML = avatarHtml(name, userId, photoUrl, sizeClass);
       const newEl = tmp.firstElementChild;
       newEl.id = elId;
       el.replaceWith(newEl);
@@ -681,12 +707,14 @@
       setTimeout(() => el.classList.remove('show'), 1600);
     }
 
+    const SKILL_ICON = { 'IT': '💻', 'บริหาร': '📊', 'ทั่วไป': '📄' };
+    const LEVEL_ICON = { 'มหาวิทยาลัย': '🏫', 'ประเทศ': '🇹🇭', 'นานาชาติ': '🌏' };
     const SKILL_COLORS = {
-      'IT': { bg: '#ccfbf1', fg: '#0d9488' },
-      'บริหาร': { bg: '#ede9fe', fg: '#7c3aed' },
-      'ทั่วไป': { bg: '#fef3c7', fg: '#b45309' }
+      'IT': { bg: 'rgba(34,211,238,0.15)', fg: '#22d3ee' },
+      'บริหาร': { bg: 'rgba(168,85,247,0.15)', fg: '#c084fc' },
+      'ทั่วไป': { bg: 'rgba(251,191,36,0.15)', fg: '#fbbf24' }
     };
-    function skillColor(skill) { return SKILL_COLORS[skill] || { bg: '#f1f1ef', fg: '#57534e' }; }
+    function skillColor(skill) { return SKILL_COLORS[skill] || { bg: 'rgba(255,255,255,0.08)', fg: '#a89cc8' }; }
 
     /* ==================================================================
      * VIEW SWITCH
@@ -708,18 +736,18 @@
     function switchAdminTab(name) {
       document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active-tab-content'));
       document.getElementById('admin-tab-' + name).classList.add('active-tab-content');
-
       document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active-tab'));
-      const btn = document.querySelector(`.admin-tab-btn[data-tab="${name}"]`);
-      if (btn) btn.classList.add('active-tab');
+      document.querySelector(`.admin-tab-btn[data-tab="${name}"]`).classList.add('active-tab');
     }
 
     /* ==================================================================
-     * หน้าหลัก
+     * STATE
      * ================================================================== */
     let currentUserId = null;
-    let pendingResult = null;
     let lastState = null;
+    let pendingResult = null;
+    let focusState = 'idle'; // idle | loading | result | success | error
+    let focusErrorMsg = '';
     let submissionsById = {};
 
     window.onload = function () {
@@ -739,11 +767,11 @@
       const sidebarBadge = document.getElementById('pendingBadgeCount');
       const tabBadge = document.getElementById('pendingTabBadge');
       if (count > 0) {
-        sidebarBadge.textContent = count; sidebarBadge.style.display = 'inline-block';
-        tabBadge.textContent = count; tabBadge.style.display = 'inline-block';
+        sidebarBadge.textContent = count; sidebarBadge.classList.remove('hidden');
+        tabBadge.textContent = count; tabBadge.classList.remove('hidden');
       } else {
-        sidebarBadge.style.display = 'none';
-        tabBadge.style.display = 'none';
+        sidebarBadge.classList.add('hidden');
+        tabBadge.classList.add('hidden');
       }
     }
 
@@ -753,47 +781,33 @@
       select.innerHTML = '<option value="">-- เลือก user --</option>' +
         users.map(u => `<option value="${u.userId}">${u.name} (${u.department})</option>`).join('');
       select.onchange = () => loadUserState(select.value);
-      if (previousValue && users.some(u => u.userId === previousValue)) {
-        select.value = previousValue;
-      }
+      if (previousValue && users.some(u => u.userId === previousValue)) select.value = previousValue;
     }
 
     function loadUserState(userId) {
-      if (!userId) return;
+      if (!userId) {
+        currentUserId = null;
+        document.getElementById('homeContent').classList.add('hidden');
+        document.getElementById('emptyStateBanner').classList.remove('hidden');
+        return;
+      }
       currentUserId = userId;
-      pendingResult = null;
-      document.getElementById('submitBtn').style.display = 'none';
-      document.getElementById('analyzeResult').textContent = '';
-      document.getElementById('profileHeader').innerHTML = '⏳ กำลังโหลด...';
+      focusState = 'idle'; pendingResult = null;
+      document.getElementById('homeErrorBanner').innerHTML = '';
 
       google.script.run
-        .withSuccessHandler(renderUserCard)
+        .withSuccessHandler(renderHomeUser)
         .withFailureHandler(onHomeError)
         .getUserState(userId);
     }
 
     function refreshCurrentUser() {
-      if (!currentUserId) {
-        document.getElementById('analyzeResult').innerHTML =
-          `<div class="error-box">⚠️ กรุณาเลือก user ก่อนรีเฟรช</div>`;
-        return;
-      }
-      const btn = document.getElementById('refreshBtn');
+      if (!currentUserId) { onHomeError({ message: 'กรุณาเลือก user ก่อนรีเฟรช' }); return; }
       const icon = document.getElementById('refreshIcon');
-      btn.disabled = true;
       icon.classList.add('spin');
-
       google.script.run
-        .withSuccessHandler(function (state) {
-          renderUserCard(state);
-          btn.disabled = false;
-          icon.classList.remove('spin');
-        })
-        .withFailureHandler(function (error) {
-          onHomeError(error);
-          btn.disabled = false;
-          icon.classList.remove('spin');
-        })
+        .withSuccessHandler(function (state) { renderHomeUser(state); icon.classList.remove('spin'); })
+        .withFailureHandler(function (err) { onHomeError(err); icon.classList.remove('spin'); })
         .getUserState(currentUserId);
     }
 
@@ -801,122 +815,123 @@
       if (!currentUserId) return;
       google.script.run
         .withSuccessHandler(function (state) {
-          renderUserCard(state);
+          renderHomeUser(state);
           const note = document.getElementById('autoRefreshNote');
           note.classList.add('show');
           setTimeout(() => note.classList.remove('show'), 3000);
         })
-        .withFailureHandler(function (err) { console.error('auto refresh home failed', err); })
+        .withFailureHandler(function (err) { console.error('auto refresh failed', err); })
         .getUserState(currentUserId);
     }
 
-    function renderUserCard(state) {
-      if (!state) { onHomeError({ message: 'ไม่ได้รับข้อมูล user จาก server (state เป็น null)' }); return; }
+    /* ==================================================================
+     * RENDER: HOME
+     * ================================================================== */
+    function renderHomeUser(state) {
+      if (!state) { onHomeError({ message: 'ไม่ได้รับข้อมูล user จาก server' }); return; }
       lastState = state;
+      document.getElementById('emptyStateBanner').classList.add('hidden');
+      document.getElementById('homeContent').classList.remove('hidden');
+
       const g = state.growupLevel;
+      const tier = tierFor(g.level);
 
       setAvatarInto('topAvatar', state.name, state.userId, state.photoUrl, 'avatar-sm');
+      setAvatarInto('profileAvatarDesktop', state.name, state.userId, state.photoUrl, 'avatar-lg');
 
-      const streakBadge = g.pendingXp > 0
-        ? `<div class="streak-flag" title="+${g.pendingXp} XP รออนุมัติ">${svgIcon('clock', 15)}</div>` : '';
-      const avatar = avatarHtml(state.name, state.userId, state.photoUrl, 'avatar-lg', true);
-      const pct = g.xpForNextLevel > 0 ? Math.min(100, (g.xpIntoLevel / g.xpForNextLevel) * 100) : 100;
+      document.getElementById('profileNameText').textContent = state.name;
+      document.getElementById('profileMetaRow').innerHTML = `
+        <span class="profile-id-text">${state.department} · ID: ${state.userId}</span>
+        <span class="copy-pill" id="copyPill" onclick="copyUserId('${state.userId}')">คัดลอก ID</span>`;
 
-      document.getElementById('profileHeader').innerHTML = `
-        <div class="avatar-wrap">${avatar}${streakBadge}</div>
-        <div class="profile-info">
-          <h2>${state.name}</h2>
-          <div class="sub">${state.department} • ${g.badge.name}${g.pendingXp > 0 ? ` — <span class="pending">+${g.pendingXp} XP รออนุมัติ</span>` : ''}</div>
-          <div class="xp-bar-track"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
-          <div class="xp-bar-labels"><span>Level ${g.level}</span><span>${g.xpIntoLevel} / ${g.xpForNextLevel} XP</span></div>
+      const pct = g.xpForNextLevel > 0 ? Math.min(100, Math.round((g.xpIntoLevel / g.xpForNextLevel) * 100)) : 100;
+      document.getElementById('levelHeroCard').innerHTML = `
+        <div class="level-hero-card">
+          <div class="medal-badge-icon">${badgeSvg(tier.path, tier.color, 36)}</div>
+          <div class="level-hero-body">
+            <div class="level-hero-top">
+              <div class="level-hero-lv">Lv ${g.level}</div>
+              <button class="level-hero-link" onclick="document.getElementById('skillDetailSection').scrollIntoView({behavior:'smooth'})">ดูรายละเอียด ›</button>
+            </div>
+            <div class="level-hero-caption">${tier.name} · XP สะสม ${g.approvedXp}${g.pendingXp > 0 ? ` <span class="pend">(+${g.pendingXp} รออนุมัติ)</span>` : ''}</div>
+            <div class="level-hero-track"><div class="level-hero-fill" style="width:${pct}%"></div></div>
+          </div>
         </div>`;
 
-      document.getElementById('statsRow').innerHTML = `
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('flag')}</div>
-          <div><div class="stat-value">${g.level}</div><div class="stat-label">Level ปัจจุบัน</div></div>
+      document.getElementById('dualCardRow').innerHTML = `
+        <div class="dual-card">
+          <div class="dual-card-header">
+            <span class="dual-card-title">รออนุมัติ</span>
+          </div>
+          <div class="dual-card-value">${g.pendingXp} <span>⏳</span></div>
+          <div class="dual-card-sub">XP ที่ยังไม่อนุมัติ</div>
         </div>
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('target')}</div>
-          <div><div class="stat-value">${g.approvedXp}</div><div class="stat-label">XP ที่อนุมัติแล้ว</div></div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('check')}</div>
-          <div><div class="stat-value">${state.submissions.length}</div><div class="stat-label">ใบรับรองที่ส่งทั้งหมด</div></div>
+        <div class="dual-card">
+          <div class="dual-card-header">
+            <span class="dual-card-title">Badge</span>
+          </div>
+          <div class="dual-card-value badge-mode">${tier.name}</div>
+          <div class="dual-card-sub">Level ${g.level} ภาพรวม</div>
         </div>`;
 
-      renderAchievements(state.specialList);
+      renderSkillDetailSection(state.specialList);
       renderInventory(state.submissions);
     }
 
-    function renderAchievements(specialList) {
-      const visibleList = specialList.filter(s => (s.approvedXp > 0 || s.pendingXp > 0));
+    function copyUserId(userId) {
+      const pill = document.getElementById('copyPill');
+      try {
+        navigator.clipboard.writeText(userId);
+        if (pill) { const orig = pill.textContent; pill.textContent = 'คัดลอกแล้ว! ✅'; setTimeout(() => pill.textContent = orig, 1500); }
+      } catch (e) { console.error('copy failed', e); }
+    }
 
-      document.getElementById('achCount').textContent = visibleList.length;
+    function onHomeError(error) {
+      const msg = (error && error.message) ? error.message : String(error);
+      document.getElementById('homeErrorBanner').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
+      console.error('NextTalent home error:', error);
+    }
 
-      if (!visibleList.length) {
-        document.getElementById('achievementsGrid').innerHTML =
-          '<p class="empty-note">ยังไม่มีทักษะที่ได้คะแนน — ส่งใบรับรองเพื่อเริ่มสะสม XP</p>';
-        document.getElementById('achievementsExtra').innerHTML = '';
-        document.getElementById('achProgress').style.width = '0%';
-        document.getElementById('achViewAllBtn').classList.add('hidden');
-        return;
-      }
+    /* ==================================================================
+     * SKILL DETAIL SECTION (inline, no modal — desktop)
+     * ================================================================== */
+    function renderSkillDetailSection(specialList) {
+      document.getElementById('skillCount').textContent = specialList.filter(s => s.approvedXp > 0 || s.pendingXp > 0).length;
 
-      document.getElementById('achViewAllBtn').classList.remove('hidden');
-
-      const totalLevel = visibleList.reduce((s, x) => s + x.level, 0);
-      const maxPossible = visibleList.length * 20;
-      document.getElementById('achProgress').style.width = Math.min(100, (totalLevel / maxPossible) * 100) + '%';
-
-      document.getElementById('achievementsGrid').innerHTML = visibleList.map(s => {
-        const tier = tierFor(s.level);
+      document.getElementById('skillDetailSection').innerHTML = specialList.map(s => {
         const col = skillColor(s.skill);
         const pct = s.xpForNextLevel > 0 ? Math.min(100, (s.xpIntoLevel / s.xpForNextLevel) * 100) : 100;
-        const pendTxt = s.pendingXp > 0 ? ` <span class="pend">+${s.pendingXp}</span>` : '';
-        return `<div class="achievement-row">
-          <div class="ach-icon-circle" style="background:${col.bg}">${badgeSvg(tier.path, col.fg, 22)}</div>
-          <div class="ach-info">
-            <div class="ach-name-row">
-              <span class="name">${s.skill} — Lv.${s.level} (${tier.name})</span>
-              <span class="xp-text">${s.xpIntoLevel}/${s.xpForNextLevel} XP${pendTxt}</span>
-            </div>
-            <div class="ach-bar-track"><div class="ach-bar-fill" style="width:${pct}%;background:${col.fg}"></div></div>
-          </div>
-        </div>`;
-      }).join('');
-
-      document.getElementById('achievementsExtra').innerHTML = visibleList.map(s => {
-        return BADGE_TIERS.map(t => {
+        const pend = s.pendingXp > 0 ? ` <span style="color:var(--gold);font-weight:700;">+${s.pendingXp}</span>` : '';
+        const shelf = BADGE_TIERS.map(t => {
           const unlocked = s.level >= t.minLevel;
-          return `<div class="item">
-            <div class="item-icon-circle ${unlocked ? '' : 'locked'}" style="background:${unlocked ? t.bg : ''}">
-              ${badgeSvg(t.path, unlocked ? t.color : '#d6d3d1', 22)}
+          return `<div class="bsm-item">
+            <div class="bsm-circle" style="background:${unlocked ? t.color + '22' : 'rgba(255,255,255,0.05)'}">
+              ${badgeSvg(t.path, unlocked ? t.color : '#4b4560', 20)}
             </div>
-            <div class="item-label">${s.skill}<small>${t.name} Lv.${t.minLevel}+</small></div>
+            <div class="bsm-label">${t.name}</div>
           </div>`;
         }).join('');
+        return `<div class="skill-detail-row">
+          <div class="sdr-head">
+            <span class="nm">${SKILL_ICON[s.skill] || ''} ${s.skill} — Lv.${s.level}</span>
+            <span class="xp">${s.xpIntoLevel}/${s.xpForNextLevel} XP${pend}</span>
+          </div>
+          <div class="sdr-track"><div class="sdr-fill" style="width:${pct}%;background:${col.fg}"></div></div>
+          <div class="badge-shelf-mini">${shelf}</div>
+        </div>`;
       }).join('');
     }
 
-    function toggleAchExtra() {
-      const extra = document.getElementById('achievementsExtra');
-      const btn = document.getElementById('achViewAllBtn');
-      const isHidden = extra.classList.contains('hidden');
-      extra.classList.toggle('hidden');
-      btn.textContent = isHidden ? 'ย่อกลับ' : 'ดู badge shelf ทั้งหมด';
-    }
-
+    /* ==================================================================
+     * INVENTORY (inline list, desktop) + view modal
+     * ================================================================== */
     function renderInventory(submissions) {
       document.getElementById('invCount').textContent = submissions.length;
-      const approvedCount = submissions.filter(s => s.status === 'approved').length;
-      document.getElementById('invProgress').style.width =
-        submissions.length ? (approvedCount / submissions.length) * 100 + '%' : '0%';
 
       const statusMeta = {
-        approved:  { icon: 'check', bg: '#dcfce7', fg: '#16a34a', label: 'อนุมัติแล้ว' },
-        submitted: { icon: 'clock', bg: '#fef3c7', fg: '#d97706', label: 'รออนุมัติ' },
-        rejected:  { icon: 'cross', bg: '#fee2e2', fg: '#dc2626', label: 'ถูกปฏิเสธ' }
+        approved:  { icon: 'check', bg: 'rgba(52,211,153,0.15)', fg: '#34d399', label: 'อนุมัติแล้ว' },
+        submitted: { icon: 'clock', bg: 'rgba(251,191,36,0.15)', fg: '#fbbf24', label: 'รออนุมัติ' },
+        rejected:  { icon: 'cross', bg: 'rgba(248,113,113,0.15)', fg: '#f87171', label: 'ถูกปฏิเสธ' }
       };
 
       const container = document.getElementById('inventoryList');
@@ -926,7 +941,7 @@
         return;
       }
 
-      const sorted = [...submissions].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      const sorted = [...submissions].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       submissionsById = {};
       sorted.forEach(item => { submissionsById[item.id] = item; });
 
@@ -949,96 +964,124 @@
     function openSubmissionModal(id) {
       const item = submissionsById[id];
       if (!item) return;
-
       const statusMeta = {
-        approved:  { bg: '#dcfce7', fg: '#16a34a', label: 'อนุมัติแล้ว' },
-        submitted: { bg: '#fef3c7', fg: '#d97706', label: 'รออนุมัติ' },
-        rejected:  { bg: '#fee2e2', fg: '#dc2626', label: 'ถูกปฏิเสธ' }
+        approved:  { bg: 'rgba(52,211,153,0.15)', fg: '#34d399', label: 'อนุมัติแล้ว' },
+        submitted: { bg: 'rgba(251,191,36,0.15)', fg: '#fbbf24', label: 'รออนุมัติ' },
+        rejected:  { bg: 'rgba(248,113,113,0.15)', fg: '#f87171', label: 'ถูกปฏิเสธ' }
       };
       const meta = statusMeta[item.status] || statusMeta.submitted;
       const d = item.timestamp ? new Date(item.timestamp).toLocaleString('th-TH') : '-';
       const previewUrl = item.previewUrl || toPreviewUrl(item.fileUrl);
 
-      let fileSection = '<p style="font-size:0.85rem;color:var(--text-muted);">ไม่พบไฟล์แนบ</p>';
+      let fileSection = '<p style="font-size:0.85rem;color:var(--text-dim);">ไม่พบไฟล์แนบ</p>';
       if (item.fileUrl) {
         fileSection = previewUrl
           ? `<iframe src="${previewUrl}" width="100%" height="300" style="border:1px solid var(--border);border-radius:12px;"></iframe>
-             <p style="margin-top:8px;font-size:0.82rem;"><a href="${item.fileUrl}" target="_blank">เปิดไฟล์ในแท็บใหม่ ↗</a></p>`
+             <p style="margin-top:8px;font-size:0.8rem;"><a href="${item.fileUrl}" target="_blank">เปิดไฟล์ในแท็บใหม่ ↗</a></p>`
           : `<p style="font-size:0.85rem;"><a href="${item.fileUrl}" target="_blank">📄 เปิดไฟล์แนบในแท็บใหม่ ↗</a></p>`;
       }
 
       document.getElementById('viewModalBody').innerHTML = `
-        <div class="view-modal-header">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
           <div class="icon-circle-sm" style="width:44px;height:44px;background:${meta.bg};color:${meta.fg};">
             ${svgIcon(item.status === 'approved' ? 'check' : item.status === 'rejected' ? 'cross' : 'clock', 20)}
           </div>
-          <div class="info">
-            <h3>${item.skill} — ${item.level}</h3>
-            <div class="sub">📅 ${d} · XP ${item.xp} · rarity x${item.rarity}</div>
+          <div style="flex:1;">
+            <h3 style="font-size:1rem;">${item.skill} — ${item.level}</h3>
+            <div style="font-size:0.78rem;color:var(--text-dim);">📅 ${d} · XP ${item.xp} · rarity x${item.rarity}</div>
           </div>
-          <span class="status-tag" style="background:${meta.bg};color:${meta.fg};margin-left:auto;">${meta.label}</span>
+          <span class="status-tag" style="background:${meta.bg};color:${meta.fg};">${meta.label}</span>
         </div>
-
         <div class="view-field-label">ไฟล์แนบ</div>
         ${fileSection}
-
         <div class="view-field-label">ข้อความที่ OCR อ่านได้</div>
-        <div class="ocr-text-box">${item.ocrText ? item.ocrText.replace(/</g, '&lt;') : '(ไม่มีข้อความ)'}</div>
-      `;
+        <div class="ocr-text-box">${item.ocrText ? item.ocrText.replace(/</g, '&lt;') : '(ไม่มีข้อความ)'}</div>`;
 
       document.getElementById('viewSubmissionModal').style.display = 'flex';
     }
+    function closeViewModal() { document.getElementById('viewSubmissionModal').style.display = 'none'; }
 
-    function closeViewModal() {
-      document.getElementById('viewSubmissionModal').style.display = 'none';
+    /* ==================================================================
+     * UPLOAD / ANALYZE / SUBMIT (inline card, desktop)
+     * ================================================================== */
+    function renderUploadCard() {
+      const el = document.getElementById('uploadCardBody');
+
+      if (focusState === 'loading') {
+        el.innerHTML = `<div class="focus-loading"><div class="focus-spinner"></div><div>กำลังวิเคราะห์... (OCR + AI อาจใช้เวลาสักครู่)</div></div>`;
+        return;
+      }
+      if (focusState === 'error') {
+        el.innerHTML = `<div class="error-box" style="margin-bottom:12px;">❌ ${focusErrorMsg}</div>
+          <button class="btn btn-outline btn-block" onclick="resetFocusCard()">ลองใหม่</button>`;
+        return;
+      }
+      if (focusState === 'result' && pendingResult) {
+        const r = pendingResult;
+        el.innerHTML = `
+          <span class="focus-tag">✨ ผลวิเคราะห์</span>
+          <div class="focus-result-grid">
+            <div class="focus-result-stat"><div class="frs-label">ทักษะ</div><div class="frs-value">${SKILL_ICON[r.skill] || '🏷️'} ${r.skill}</div></div>
+            <div class="focus-result-stat"><div class="frs-label">ระดับ</div><div class="frs-value">${LEVEL_ICON[r.level] || '⭐'} ${r.level}</div></div>
+          </div>
+          <div class="focus-xp-box"><span>XP ที่จะได้รับ (x${r.rarity})</span><span class="focus-xp-value">+${r.xp}</span></div>
+          <button class="btn btn-primary btn-block" onclick="submitResult()">✅ ส่งผล</button>`;
+        return;
+      }
+      if (focusState === 'success') {
+        el.innerHTML = `<div class="focus-success">✅ ส่งผลเรียบร้อย! รอการอนุมัติจาก Admin</div>
+          <button class="btn btn-outline btn-block" onclick="resetFocusCard()">📄 อัพโหลดใบใหม่</button>`;
+        return;
+      }
+      el.innerHTML = `<p class="empty-note" style="margin-bottom:14px;">เลือกไฟล์ PDF เพื่อสแกนและวิเคราะห์ทักษะด้วย AI</p>
+        <button class="btn btn-primary btn-block" onclick="document.getElementById('pdfFile').click()">📄 เลือกไฟล์ PDF</button>`;
     }
 
+    function resetFocusCard() { focusState = 'idle'; pendingResult = null; renderUploadCard(); }
+
     async function analyzeCertificate() {
-      if (!currentUserId) return onHomeError({ message: 'กรุณาเลือก user ก่อน' });
+      if (!currentUserId) { onHomeError({ message: 'กรุณาเลือก user ก่อน' }); return; }
       const fileInput = document.getElementById('pdfFile');
       if (!fileInput.files.length) return;
-
       const file = fileInput.files[0];
       const fileBase64 = await fileToBase64(file);
-      const resultEl = document.getElementById('analyzeResult');
-      resultEl.innerHTML = '⏳ กำลังวิเคราะห์... (OCR + AI อาจใช้เวลาสักครู่)';
-      document.getElementById('submitBtn').style.display = 'none';
+
+      focusState = 'loading';
+      renderUploadCard();
 
       google.script.run
         .withSuccessHandler(onAnalyzeSuccess)
-        .withFailureHandler(onHomeError)
+        .withFailureHandler(onFocusError)
         .analyzeCertificate(fileBase64, file.name, file.type);
     }
 
     function onAnalyzeSuccess(result) {
-      if (!result) { onHomeError({ message: 'ไม่ได้รับผลวิเคราะห์จาก server' }); return; }
+      if (!result) { onFocusError({ message: 'ไม่ได้รับผลวิเคราะห์จาก server' }); return; }
       pendingResult = result;
-      document.getElementById('analyzeResult').innerHTML =
-        `✅ วิเคราะห์เสร็จ — ทักษะ: <strong>${result.skill}</strong> · ระดับ: <strong>${result.level}</strong> · Rarity: x${result.rarity} · <strong>XP ที่จะได้: ${result.xp}</strong>`;
-      document.getElementById('submitBtn').style.display = 'inline-block';
+      focusState = 'result';
+      renderUploadCard();
     }
 
     function submitResult() {
       if (!currentUserId || !pendingResult) return;
       const xpGained = pendingResult.xp;
-
       google.script.run
         .withSuccessHandler(function (state) {
-          pendingResult = null;
-          document.getElementById('submitBtn').style.display = 'none';
-          document.getElementById('analyzeResult').textContent = '✅ ส่งผลเรียบร้อย (รออนุมัติจาก Admin)';
+          renderHomeUser(state);
+          focusState = 'success';
+          renderUploadCard();
           document.getElementById('pdfFile').value = '';
           showXpPopup(xpGained);
-          renderUserCard(state);
         })
-        .withFailureHandler(onHomeError)
+        .withFailureHandler(onFocusError)
         .submitResult(currentUserId, pendingResult);
     }
 
-    function onHomeError(error) {
+    function onFocusError(error) {
       const msg = (error && error.message) ? error.message : String(error);
-      document.getElementById('analyzeResult').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
-      console.error('NextTalent home error:', error);
+      focusState = 'error'; focusErrorMsg = msg;
+      renderUploadCard();
+      console.error('NextTalent focus error:', error);
     }
 
     function fileToBase64(file) {
@@ -1058,67 +1101,40 @@
       document.getElementById('leaderboardList').innerHTML = '';
       document.getElementById('skillDistribution').innerHTML = '';
 
-      google.script.run
-        .withSuccessHandler(renderDashboard)
-        .withFailureHandler(onDashboardError)
-        .getDashboardStats();
-
+      google.script.run.withSuccessHandler(renderDashboard).withFailureHandler(onDashboardError).getDashboardStats();
       loadSkillGapAnalysis();
     }
 
     function renderDashboard(stats) {
       document.getElementById('dashStatsRow').innerHTML = `
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('users')}</div>
-          <div><div class="stat-value">${stats.totalUsers}</div><div class="stat-label">User ทั้งหมด</div></div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('docs')}</div>
-          <div><div class="stat-value">${stats.totalSubmissions}</div><div class="stat-label">ใบรับรองทั้งหมด</div></div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('check')}</div>
-          <div><div class="stat-value">${stats.approvedCount}</div><div class="stat-label">อนุมัติแล้ว</div></div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('clock')}</div>
-          <div><div class="stat-value">${stats.pendingCount}</div><div class="stat-label">รออนุมัติ</div></div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">${svgIcon('target')}</div>
-          <div><div class="stat-value">${stats.totalApprovedXp}</div><div class="stat-label">XP รวมที่อนุมัติ</div></div>
-        </div>`;
+        <div class="stat-pill"><div class="stat-icon">${svgIcon('users')}</div>
+          <div><div class="stat-value">${stats.totalUsers}</div><div class="stat-label">User ทั้งหมด</div></div></div>
+        <div class="stat-pill"><div class="stat-icon">${svgIcon('docs')}</div>
+          <div><div class="stat-value">${stats.totalSubmissions}</div><div class="stat-label">ใบรับรองทั้งหมด</div></div></div>
+        <div class="stat-pill"><div class="stat-icon">${svgIcon('check')}</div>
+          <div><div class="stat-value">${stats.approvedCount}</div><div class="stat-label">อนุมัติแล้ว</div></div></div>
+        <div class="stat-pill"><div class="stat-icon">${svgIcon('clock')}</div>
+          <div><div class="stat-value">${stats.pendingCount}</div><div class="stat-label">รออนุมัติ</div></div></div>
+        <div class="stat-pill"><div class="stat-icon">${svgIcon('target')}</div>
+          <div><div class="stat-value">${stats.totalApprovedXp}</div><div class="stat-label">XP รวมที่อนุมัติ</div></div></div>`;
 
-      // Leaderboard
       const lbContainer = document.getElementById('leaderboardList');
-      if (!stats.leaderboard.length) {
-        lbContainer.innerHTML = '<p class="empty-note">ยังไม่มีข้อมูล</p>';
-      } else {
-        lbContainer.innerHTML = stats.leaderboard.map((u, i) => {
+      lbContainer.innerHTML = !stats.leaderboard.length ? '<p class="empty-note">ยังไม่มีข้อมูล</p>' :
+        stats.leaderboard.map((u, i) => {
           const rank = i + 1;
           const rankClass = rank <= 3 ? `rank-${rank}` : '';
-          const avatar = avatarHtml(u.name, u.userId, u.photoUrl, 'avatar-sm');
           return `<div class="leaderboard-row">
             <div class="lb-rank ${rankClass}">${rank}</div>
-            ${avatar}
-            <div class="lb-info">
-              <div class="name">${u.name}</div>
-              <div class="dept">${u.department}</div>
-            </div>
-            <div class="lb-xp">
-              <div class="xp-num">${u.xp} XP</div>
-              <div class="lv-label">Lv.${u.level} · ${u.badge.name}</div>
-            </div>
+            ${avatarHtml(u.name, u.userId, u.photoUrl, 'avatar-sm')}
+            <div class="lb-info"><div class="name">${u.name}</div><div class="dept">${u.department}</div></div>
+            <div class="lb-xp"><div class="xp-num">${u.xp} XP</div><div class="lv-label">Lv.${u.level} · ${u.badge.name}</div></div>
           </div>`;
         }).join('');
-      }
 
-      // Skill distribution
       const skillContainer = document.getElementById('skillDistribution');
       const entries = Object.entries(stats.skillCounts || {});
-      if (!entries.length) {
-        skillContainer.innerHTML = '<p class="empty-note">ยังไม่มีรายการที่อนุมัติ</p>';
-      } else {
+      if (!entries.length) { skillContainer.innerHTML = '<p class="empty-note">ยังไม่มีรายการที่อนุมัติ</p>'; }
+      else {
         const maxCount = Math.max(...entries.map(e => e[1]));
         skillContainer.innerHTML = entries.map(([skill, count]) => {
           const col = skillColor(skill);
@@ -1145,67 +1161,41 @@
       document.getElementById('skillGapOrgSummary').innerHTML = '⏳ กำลังคำนวณ...';
       document.getElementById('criticalGapsList').innerHTML = '';
       document.getElementById('deptCoverageList').innerHTML = '';
-
-      google.script.run
-        .withSuccessHandler(renderSkillGapAnalysis)
-        .withFailureHandler(onSkillGapError)
-        .getSkillGapAnalysis();
+      google.script.run.withSuccessHandler(renderSkillGapAnalysis).withFailureHandler(onSkillGapError).getSkillGapAnalysis();
     }
-
-    function fulfillmentColorClass(pct) {
-      if (pct >= 80) return 'high';
-      if (pct >= 50) return 'mid';
-      return 'low';
-    }
+    function fulfillmentColorClass(pct) { if (pct >= 80) return 'high'; if (pct >= 50) return 'mid'; return 'low'; }
 
     function renderSkillGapAnalysis(data) {
-      // --- องค์กรโดยรวม เทียบเป้าหมาย ---
       const orgEl = document.getElementById('skillGapOrgSummary');
       const withTarget = data.organizationAverage.filter(s => s.hasTarget);
-
-      if (!withTarget.length) {
-        orgEl.innerHTML = '<p class="empty-note">ยังไม่ได้ตั้งเป้าหมาย (benchmark) ใน Config sheet — เพิ่ม category="benchmark" เพื่อเริ่มวิเคราะห์</p>';
-      } else {
-        orgEl.innerHTML = data.organizationAverage.filter(s => s.hasTarget).map(s => {
+      orgEl.innerHTML = !withTarget.length
+        ? '<p class="empty-note">ยังไม่ได้ตั้งเป้าหมาย (benchmark) ใน Config sheet — เพิ่ม category="benchmark" เพื่อเริ่มวิเคราะห์</p>'
+        : withTarget.map(s => {
           const cls = fulfillmentColorClass(s.fulfillmentPct);
           const pendingText = s.avgPendingXp > 0 ? ` <span class="pending">(+${s.avgPendingXp} รออนุมัติ)</span>` : '';
           return `<div class="gap-skill-row">
-            <div class="gap-skill-header">
-              <span class="name">${s.skill}</span>
-              <span class="xp-text">เฉลี่ย ${s.avgApprovedXp} / เป้าหมาย ${s.targetXp} XP${pendingText}</span>
-            </div>
+            <div class="gap-skill-header"><span class="name">${s.skill}</span><span class="xp-text">เฉลี่ย ${s.avgApprovedXp} / เป้าหมาย ${s.targetXp} XP${pendingText}</span></div>
             <div class="gap-bar-track">
               <div class="gap-bar-fill ${cls}" style="width:${s.fulfillmentPct}%"></div>
               ${s.avgPendingXp > 0 ? `<div class="gap-projected-marker" style="left:${s.projectedFulfillmentPct}%"></div>` : ''}
             </div>
           </div>`;
         }).join('');
-      }
 
-      // --- Critical Gaps ---
       const gapEl = document.getElementById('criticalGapsList');
-      if (!data.criticalGaps.length) {
-        gapEl.innerHTML = '<p class="empty-note">🎉 ไม่มีช่องว่างทักษะที่น่าเป็นห่วง ทุกหน่วยงานเข้าใกล้เป้าหมายแล้ว</p>';
-      } else {
-        gapEl.innerHTML = data.criticalGaps.map(g => `
+      gapEl.innerHTML = !data.criticalGaps.length
+        ? '<p class="empty-note">🎉 ไม่มีช่องว่างทักษะที่น่าเป็นห่วง ทุกหน่วยงานเข้าใกล้เป้าหมายแล้ว</p>'
+        : data.criticalGaps.map(g => `
           <div class="gap-alert-card">
             <div class="gap-icon">${svgIcon('target', 18)}</div>
-            <div class="gap-text">
-              <strong>${g.department}</strong> ยังขาดทักษะ <strong>${g.skill}</strong> อยู่ ${g.gapXp} XP
-              (ปัจจุบันได้ ${g.fulfillmentPct}% ของเป้าหมาย)
-            </div>
+            <div class="gap-text"><strong>${g.department}</strong> ยังขาดทักษะ <strong>${g.skill}</strong> อยู่ ${g.gapXp} XP (ปัจจุบันได้ ${g.fulfillmentPct}%)</div>
             <div class="gap-pct">${g.fulfillmentPct}%</div>
           </div>`).join('');
-      }
 
-      // --- Department coverage ---
       const deptEl = document.getElementById('deptCoverageList');
-      if (!data.departments.length) {
-        deptEl.innerHTML = '<p class="empty-note">ไม่มีข้อมูลหน่วยงาน</p>';
-      } else {
-        const colorMap = { low: '#dc2626', mid: '#f59e0b', high: '#16a34a' };
-        const sorted = [...data.departments].sort((a, b) => a.overallFulfillmentPct - b.overallFulfillmentPct);
-        deptEl.innerHTML = sorted.map(d => {
+      const colorMap = { low: '#ef4444', mid: '#f59e0b', high: '#10b981' };
+      deptEl.innerHTML = !data.departments.length ? '<p class="empty-note">ไม่มีข้อมูลหน่วยงาน</p>' :
+        [...data.departments].sort((a, b) => a.overallFulfillmentPct - b.overallFulfillmentPct).map(d => {
           const cls = fulfillmentColorClass(d.overallFulfillmentPct);
           return `<div class="dept-coverage-row">
             <div class="dept-name">${d.department}</div>
@@ -1213,17 +1203,14 @@
             <div class="pct-label">${d.overallFulfillmentPct}%</div>
           </div>`;
         }).join('');
-      }
     }
-
     function onSkillGapError(error) {
       const msg = (error && error.message) ? error.message : String(error);
       document.getElementById('skillGapOrgSummary').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
-      console.error('NextTalent skill gap error:', error);
     }
 
     /* ==================================================================
-     * Admin
+     * ADMIN
      * ================================================================== */
     let pendingSubmissions = [];
     let configOptions = { skills: [], levels: [] };
@@ -1234,10 +1221,7 @@
       google.script.run
         .withSuccessHandler(function (options) {
           configOptions = options;
-          google.script.run
-            .withSuccessHandler(renderPendingList)
-            .withFailureHandler(onAdminError)
-            .getPendingSubmissions();
+          google.script.run.withSuccessHandler(renderPendingList).withFailureHandler(onAdminError).getPendingSubmissions();
         })
         .withFailureHandler(onAdminError)
         .getConfigOptions();
@@ -1249,11 +1233,7 @@
       const photoUrl = document.getElementById('newUserPhoto').value.trim();
       const errEl = document.getElementById('addUserError');
       errEl.innerHTML = '';
-
-      if (!name) {
-        errEl.innerHTML = '<div class="error-box">❌ กรุณาระบุชื่อ-นามสกุล</div>';
-        return;
-      }
+      if (!name) { errEl.innerHTML = '<div class="error-box">❌ กรุณาระบุชื่อ-นามสกุล</div>'; return; }
 
       google.script.run
         .withSuccessHandler(function (users) {
@@ -1276,21 +1256,16 @@
       updatePendingBadges(pendingSubmissions);
 
       const container = document.getElementById('pendingList');
-      if (!pendingSubmissions.length) {
-        container.innerHTML = '<p style="color:var(--text-muted)">ไม่มีรายการรออนุมัติ 🎉</p>';
-        return;
-      }
+      if (!pendingSubmissions.length) { container.innerHTML = '<p class="empty-note">ไม่มีรายการรออนุมัติ 🎉</p>'; return; }
       container.innerHTML = pendingSubmissions.map(item => {
         const d = item.timestamp ? new Date(item.timestamp).toLocaleString('th-TH') : '-';
-        const avatar = avatarHtml(item.userName, item.userId, item.userPhotoUrl, 'avatar-sm');
         return `
           <div class="pending-card">
             <div class="pending-info-row">
-              ${avatar}
+              ${avatarHtml(item.userName, item.userId, item.userPhotoUrl, 'avatar-sm')}
               <div class="pending-info">
-                <strong>${item.userName}</strong> <span style="color:var(--text-muted)">(${item.department})</span>
-                📅 ${d}
-                ${item.skill} / ${item.level} — <strong>XP ${item.xp}</strong>
+                <strong>${item.userName}</strong> <span style="color:var(--text-dim)">(${item.department})</span>
+                📅 ${d} · ${item.skill} / ${item.level} — <strong>XP ${item.xp}</strong>
               </div>
             </div>
             <div class="pending-actions">
@@ -1306,41 +1281,28 @@
       const item = pendingSubmissions.find(p => p.id === id);
       if (!item) return;
       currentEditId = id;
-
       document.getElementById('modalSkillSelect').innerHTML =
         configOptions.skills.map(s => `<option value="${s}" ${s === item.skill ? 'selected' : ''}>${s}</option>`).join('');
       document.getElementById('modalLevelSelect').innerHTML =
         configOptions.levels.map(l => `<option value="${l}" ${l === item.level ? 'selected' : ''}>${l}</option>`).join('');
 
       const previewEl = document.getElementById('modalFilePreview');
-      if (item.previewUrl) {
-        previewEl.innerHTML =
-          `<iframe src="${item.previewUrl}" width="100%" height="340" style="border:1px solid var(--border);border-radius:12px;"></iframe>
-           <p style="margin-top:8px;font-size:0.82rem;"><a href="${item.fileUrl}" target="_blank">เปิดไฟล์ในแท็บใหม่ ↗</a></p>`;
-      } else {
-        previewEl.innerHTML = `<p style="font-size:0.85rem;"><a href="${item.fileUrl}" target="_blank">📄 เปิดไฟล์แนบในแท็บใหม่ ↗</a></p>`;
-      }
+      previewEl.innerHTML = item.previewUrl
+        ? `<iframe src="${item.previewUrl}" width="100%" height="340" style="border:1px solid var(--border);border-radius:12px;"></iframe>
+           <p style="margin-top:8px;font-size:0.82rem;"><a href="${item.fileUrl}" target="_blank">เปิดไฟล์ในแท็บใหม่ ↗</a></p>`
+        : `<p style="font-size:0.85rem;"><a href="${item.fileUrl}" target="_blank">📄 เปิดไฟล์แนบในแท็บใหม่ ↗</a></p>`;
 
       document.getElementById('modalEditError').innerHTML = '';
       document.getElementById('editModal').style.display = 'flex';
     }
-
-    function closeModal() {
-      document.getElementById('editModal').style.display = 'none';
-      currentEditId = null;
-    }
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; currentEditId = null; }
 
     function saveModalEdit() {
       if (!currentEditId) return;
       const skill = document.getElementById('modalSkillSelect').value;
       const level = document.getElementById('modalLevelSelect').value;
-
       google.script.run
-        .withSuccessHandler(function (list) {
-          renderPendingList(list);
-          closeModal();
-          autoRefreshHomeAfterAdminAction();
-        })
+        .withSuccessHandler(function (list) { renderPendingList(list); closeModal(); autoRefreshHomeAfterAdminAction(); })
         .withFailureHandler(function (error) {
           const msg = (error && error.message) ? error.message : String(error);
           document.getElementById('modalEditError').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
@@ -1349,25 +1311,13 @@
     }
 
     function approveItem(id) {
-      google.script.run
-        .withSuccessHandler(function (list) {
-          renderPendingList(list);
-          autoRefreshHomeAfterAdminAction();
-        })
-        .withFailureHandler(onAdminError)
-        .approveSubmission(id);
+      google.script.run.withSuccessHandler(function (list) { renderPendingList(list); autoRefreshHomeAfterAdminAction(); })
+        .withFailureHandler(onAdminError).approveSubmission(id);
     }
-
     function rejectItem(id) {
-      google.script.run
-        .withSuccessHandler(function (list) {
-          renderPendingList(list);
-          autoRefreshHomeAfterAdminAction();
-        })
-        .withFailureHandler(onAdminError)
-        .rejectSubmission(id);
+      google.script.run.withSuccessHandler(function (list) { renderPendingList(list); autoRefreshHomeAfterAdminAction(); })
+        .withFailureHandler(onAdminError).rejectSubmission(id);
     }
-
     function onAdminError(error) {
       const msg = (error && error.message) ? error.message : String(error);
       document.getElementById('pendingList').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
@@ -1388,30 +1338,24 @@
 
     function renderSearchResults(results) {
       const container = document.getElementById('searchResults');
-      if (!results || !results.length) { container.innerHTML = '<p style="color:var(--text-muted)">ไม่พบผลลัพธ์</p>'; return; }
-      container.innerHTML = results.map(r => {
+      if (!results || !results.length) { container.innerHTML = '<p class="empty-note">ไม่พบผลลัพธ์</p>'; return; }
+      container.innerHTML = '<div class="search-results-grid">' + results.map(r => {
         const tier = tierFor(r.growupLevel.level);
         const tags = r.skillTags.length
           ? r.skillTags.map(s => `<span class="skill-tag">${s}</span>`).join('')
           : '<span class="skill-tag skill-tag-empty">ยังไม่มีทักษะที่อนุมัติ</span>';
-        const avatar = avatarHtml(r.name, r.userId, r.photoUrl, 'avatar-sm');
         return `<div class="search-card">
-          <div class="search-card-header">
-            ${avatar}
-            <h4>${r.name}<small>${r.department}</small></h4>
-          </div>
+          <div class="search-card-header">${avatarHtml(r.name, r.userId, r.photoUrl, 'avatar-sm')}<h4>${r.name}<small>${r.department}</small></h4></div>
           <div style="display:flex;align-items:center;gap:6px;font-size:0.85rem;">
             ${badgeSvg(tier.path, tier.color, 18)} Level ${r.growupLevel.level} (${r.growupLevel.badge.name})
           </div>
           <div class="skill-tags">${tags}</div>
         </div>`;
-      }).join('');
+      }).join('') + '</div>';
     }
-
     function onSearchError(error) {
       const msg = (error && error.message) ? error.message : String(error);
       document.getElementById('searchResults').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
-      console.error('NextTalent search error:', error);
     }
   </script>
 
