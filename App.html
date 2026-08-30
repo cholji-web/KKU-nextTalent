@@ -475,7 +475,7 @@
           <div id="levelHeroCard"></div>
 
           <div class="home-grid">
-            <!-- LEFT: ทักษะของฉัน -->
+            <!-- LEFT: ทักษะของฉัน + คลังใบรับรอง -->
             <div>
               <div class="info-card">
                 <div class="info-card-header"><h4>🎯 ทักษะของฉัน <span class="count-badge" id="skillCount">0</span></h4></div>
@@ -811,16 +811,25 @@
         .getUserState(currentUserId);
     }
 
-    function autoRefreshHomeAfterAdminAction() {
+    /**
+     * รีเฟรชข้อมูล user ที่เปิดอยู่ในหน้าหลัก หลัง Admin ทำ action (อนุมัติ/ปฏิเสธ/แก้ไข)
+     * affectedUserId = userId ของ submission ที่ถูกดำเนินการ
+     * ถ้าไม่ตรงกับ currentUserId จะไม่รีเฟรช/ไม่โชว์ toast (กันยิง request เกินจำเป็น + กัน toast โผล่ผิดๆ)
+     */
+    function autoRefreshHomeAfterAdminAction(affectedUserId) {
       if (!currentUserId) return;
+      if (affectedUserId && affectedUserId !== currentUserId) return;
+
       google.script.run
         .withSuccessHandler(function (state) {
           renderHomeUser(state);
           const note = document.getElementById('autoRefreshNote');
-          note.classList.add('show');
-          setTimeout(() => note.classList.remove('show'), 3000);
+          if (note) {
+            note.classList.add('show');
+            setTimeout(() => note.classList.remove('show'), 3000);
+          }
         })
-        .withFailureHandler(function (err) { console.error('auto refresh failed', err); })
+        .withFailureHandler(function (err) { console.error('auto refresh home failed', err); })
         .getUserState(currentUserId);
     }
 
@@ -1297,12 +1306,24 @@
     }
     function closeModal() { document.getElementById('editModal').style.display = 'none'; currentEditId = null; }
 
+    /**
+     * บันทึกการแก้ไข skill/level ของรายการที่รออนุมัติ
+     * จับ affectedUserId (userId ของเจ้าของ submission) ไว้ก่อนเรียก server
+     * เพื่อใช้เช็คว่าควรรีเฟรชหน้าหลักของ user ที่เปิดอยู่หรือไม่
+     */
     function saveModalEdit() {
       if (!currentEditId) return;
+      const item = pendingSubmissions.find(p => p.id === currentEditId);
+      const affectedUserId = item ? item.userId : null;
       const skill = document.getElementById('modalSkillSelect').value;
       const level = document.getElementById('modalLevelSelect').value;
+
       google.script.run
-        .withSuccessHandler(function (list) { renderPendingList(list); closeModal(); autoRefreshHomeAfterAdminAction(); })
+        .withSuccessHandler(function (list) {
+          renderPendingList(list);
+          closeModal();
+          autoRefreshHomeAfterAdminAction(affectedUserId);
+        })
         .withFailureHandler(function (error) {
           const msg = (error && error.message) ? error.message : String(error);
           document.getElementById('modalEditError').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
@@ -1310,14 +1331,36 @@
         .updateSubmission(currentEditId, skill, level);
     }
 
+    /**
+     * อนุมัติรายการ — จับ affectedUserId ไว้ก่อน เพราะหลัง approveSubmission() แล้ว
+     * item นี้จะหลุดออกจาก pendingSubmissions ทำให้หาไม่เจอถ้าไปจับทีหลัง
+     */
     function approveItem(id) {
-      google.script.run.withSuccessHandler(function (list) { renderPendingList(list); autoRefreshHomeAfterAdminAction(); })
-        .withFailureHandler(onAdminError).approveSubmission(id);
+      const item = pendingSubmissions.find(p => p.id === id);
+      const affectedUserId = item ? item.userId : null;
+
+      google.script.run
+        .withSuccessHandler(function (list) {
+          renderPendingList(list);
+          autoRefreshHomeAfterAdminAction(affectedUserId);
+        })
+        .withFailureHandler(onAdminError)
+        .approveSubmission(id);
     }
+
     function rejectItem(id) {
-      google.script.run.withSuccessHandler(function (list) { renderPendingList(list); autoRefreshHomeAfterAdminAction(); })
-        .withFailureHandler(onAdminError).rejectSubmission(id);
+      const item = pendingSubmissions.find(p => p.id === id);
+      const affectedUserId = item ? item.userId : null;
+
+      google.script.run
+        .withSuccessHandler(function (list) {
+          renderPendingList(list);
+          autoRefreshHomeAfterAdminAction(affectedUserId);
+        })
+        .withFailureHandler(onAdminError)
+        .rejectSubmission(id);
     }
+
     function onAdminError(error) {
       const msg = (error && error.message) ? error.message : String(error);
       document.getElementById('pendingList').innerHTML = `<div class="error-box">❌ ${msg}</div>`;
