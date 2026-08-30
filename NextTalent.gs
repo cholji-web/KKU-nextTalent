@@ -1,8 +1,8 @@
 /**
  * ==================================================================
- * NextTalent Prototype — Part 1 + Part 2 + Avatar (Google Apps Script)
+ * NextTalent Prototype — Part 1 + Part 2 + Avatar + Skill Gap Analysis (Google Apps Script)
  * Entry point เดียวของ Web App — single-page app ตั้งแต่แรก
- * เสิร์ฟ App.html ไฟล์เดียวเสมอ การสลับ view (หน้าหลัก/Admin/ค้นหา)
+ * เสิร์ฟ App.html ไฟล์เดียวเสมอ การสลับ view (หน้าหลัก/Admin/ค้นหา/แดชบอร์ด)
  * ทำด้วย JS ฝั่ง client ทั้งหมด — ไม่มี doPost()
  * ==================================================================
  */
@@ -53,11 +53,6 @@ function setupSheet() {
   Logger.log('setupSheet() เสร็จสิ้น: Users / Submissions / Config พร้อมใช้งาน');
 }
 
-/**
- * รันครั้งเดียวหลัง setupSheet() — ใส่ค่า default ลง Config และ user ตัวอย่างลง Users
- * เช็คว่า Sheet มีข้อมูลอยู่แล้วหรือยัง (getLastRow() <= 1 คือมีแค่ header)
- * ถ้ามีข้อมูลแล้วจะไม่เขียนทับ
- */
 /** ข้อความ prompt เริ่มต้นสำหรับวิเคราะห์ทักษะ (ใช้ตอน seed ครั้งแรก) */
 var DEFAULT_SKILL_PROMPT_ =
   'คุณคือผู้ช่วยวิเคราะห์ทักษะจากข้อความที่ได้ โดยวิเคราะห์หาว่าเป็นทักษะด้านใดใน 3 ทักษะนี้ ' +
@@ -66,6 +61,8 @@ var DEFAULT_SKILL_PROMPT_ =
 
 /**
  * รันครั้งเดียวหลัง setupSheet() — ใส่ค่า default ลง Config และ user ตัวอย่างลง Users
+ * เช็คว่า Sheet มีข้อมูลอยู่แล้วหรือยัง (getLastRow() <= 1 คือมีแค่ header)
+ * ถ้ามีข้อมูลแล้วจะไม่เขียนทับ (ยกเว้น prompt/benchmark ซึ่งเช็คแยกเพื่อรองรับ migration)
  */
 function setupSeedData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -104,9 +101,12 @@ function setupSeedData() {
     configSheet.getRange(2, 1, rows.length, 3).setValues(rows);
   }
 
-  // 🔶 เติมแถว prompt ให้เสมอ ถ้ายังไม่มี (ไม่สนใจว่า Config มีข้อมูลอื่นอยู่แล้วหรือไม่)
+  // เติมแถว prompt ให้เสมอ ถ้ายังไม่มี (ไม่สนใจว่า Config มีข้อมูลอื่นอยู่แล้วหรือไม่)
   // เพื่อรองรับ migration กรณีที่รัน setupSeedData() ไปแล้วรอบก่อนหน้า (ก่อนมี feature นี้)
   ensurePromptSeed_();
+
+  // เติมแถว benchmark ให้เสมอ ถ้ายังไม่มี (ใช้กับ Skill Gap Analysis บนหน้า Dashboard)
+  ensureBenchmarkSeed_();
 
   Logger.log('setupSeedData() เสร็จสิ้น: Config และ Users มีข้อมูลตัวอย่างพร้อมใช้งาน');
 }
@@ -124,6 +124,32 @@ function ensurePromptSeed_() {
   if (!hasPrompt) {
     configSheet.appendRow(['prompt', 'skillAnalysis', DEFAULT_SKILL_PROMPT_]);
     Logger.log('เพิ่มแถว prompt เริ่มต้นลง Config เรียบร้อย');
+  }
+}
+
+/**
+ * เติมแถว category="benchmark" ลง Config ถ้ายังไม่มี (เรียกซ้ำได้ ไม่ทำให้เกิดแถวซ้ำ)
+ * ใช้เป็นเกณฑ์เป้าหมาย XP เฉลี่ยของแต่ละหน่วยงาน/ทักษะ สำหรับ Skill Gap Analysis บน Dashboard
+ * key รูปแบบ "หน่วยงาน::ทักษะ" — มี "default::ทักษะ" เป็นเกณฑ์กลาง (fallback เมื่อไม่มี override เฉพาะหน่วยงาน)
+ */
+function ensureBenchmarkSeed_() {
+  var configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+  if (!configSheet) return;
+
+  var data = configSheet.getDataRange().getValues();
+  var hasBenchmark = data.some(function (row) { return row[0] === 'benchmark'; });
+
+  if (!hasBenchmark) {
+    var rows = [
+      ['benchmark', getBenchmarkKey_('default', 'IT'), 300],
+      ['benchmark', getBenchmarkKey_('default', 'บริหาร'), 300],
+      ['benchmark', getBenchmarkKey_('default', 'ทั่วไป'), 200],
+      ['benchmark', getBenchmarkKey_('ฝ่าย IT', 'IT'), 500],
+      ['benchmark', getBenchmarkKey_('ฝ่ายบริหาร', 'บริหาร'), 500],
+      ['benchmark', getBenchmarkKey_('ฝ่ายทั่วไป', 'ทั่วไป'), 300]
+    ];
+    configSheet.getRange(configSheet.getLastRow() + 1, 1, rows.length, 3).setValues(rows);
+    Logger.log('เพิ่มแถว benchmark เริ่มต้นลง Config เรียบร้อย');
   }
 }
 
@@ -508,6 +534,151 @@ function searchUsers(query) {
 }
 
 /* ==================================================================
+ * PART 2 — PUBLIC API: Skill Gap Analysis (สำหรับหน้า Dashboard)
+ * ================================================================== */
+
+/**
+ * วิเคราะห์ช่องว่างทักษะ (Skill Gap) แยกตามหน่วยงาน x ทักษะ เทียบกับเกณฑ์เป้าหมายใน Config (category=benchmark)
+ * คืนค่า:
+ *  - departments: รายละเอียดต่อหน่วยงาน (avgXp, targetXp, gapXp, fulfillmentPct ต่อ skill + overallFulfillmentPct)
+ *  - organizationAverage: ค่าเฉลี่ยรวมทั้งองค์กรต่อ skill (ไม่แยกหน่วยงาน) เทียบกับเกณฑ์กลาง (default::skill)
+ *  - criticalGaps: top 5 คู่ (หน่วยงาน, ทักษะ) ที่ fulfillmentPct ต่ำสุด (เร่งพัฒนาก่อน)
+ * ใช้แสดงผลบนหน้า Dashboard เท่านั้น ไม่กระทบการคำนวณ XP/level จริงของ user
+ */
+function getSkillGapAnalysis() {
+  try {
+    var users = getUsersList();
+    if (!users.length) {
+      throw new Error('ไม่มี user ในระบบ — ไม่สามารถวิเคราะห์ Skill Gap ได้');
+    }
+
+    var config = loadConfig_();
+    var skillNames = Object.keys(config.rarity);
+    if (!skillNames.length) {
+      throw new Error('Config sheet ไม่มีค่า rarity เลย — ตรวจสอบ Sheet "Config"');
+    }
+
+    var allSubmissions = getAllSubmissions_();
+
+    // จัดกลุ่ม userId ตาม department
+    var deptMap = {};
+    users.forEach(function (u) {
+      var dept = u.department || '(ไม่ระบุหน่วยงาน)';
+      if (!deptMap[dept]) deptMap[dept] = [];
+      deptMap[dept].push(u.userId);
+    });
+
+    function sumXp(userIds, skill, status) {
+      return allSubmissions
+        .filter(function (s) {
+          return userIds.indexOf(s.userId) !== -1 && s.skill === skill && s.status === status;
+        })
+        .reduce(function (sum, s) { return sum + s.xp; }, 0);
+    }
+
+    function round1_(n) { return Math.round(n * 10) / 10; }
+
+    // --- คำนวณต่อหน่วยงาน ---
+    var departments = Object.keys(deptMap).map(function (dept) {
+      var userIds = deptMap[dept];
+      var userCount = userIds.length;
+
+      var skills = skillNames.map(function (skill) {
+        var approvedTotal = sumXp(userIds, skill, 'approved');
+        var pendingTotal = sumXp(userIds, skill, 'submitted');
+
+        var avgApprovedXp = approvedTotal / userCount;
+        var avgPendingXp = pendingTotal / userCount;
+        var targetXp = resolveBenchmarkXp_(config, dept, skill);
+
+        var gapXp = Math.max(0, targetXp - avgApprovedXp);
+        var fulfillmentPct = targetXp > 0 ? Math.min(100, (avgApprovedXp / targetXp) * 100) : 100;
+        var projectedFulfillmentPct = targetXp > 0
+          ? Math.min(100, ((avgApprovedXp + avgPendingXp) / targetXp) * 100)
+          : 100;
+
+        return {
+          skill: skill,
+          avgApprovedXp: round1_(avgApprovedXp),
+          avgPendingXp: round1_(avgPendingXp),
+          targetXp: targetXp,
+          gapXp: round1_(gapXp),
+          fulfillmentPct: round1_(fulfillmentPct),
+          projectedFulfillmentPct: round1_(projectedFulfillmentPct),
+          hasTarget: targetXp > 0
+        };
+      });
+
+      var skillsWithTarget = skills.filter(function (s) { return s.hasTarget; });
+      var overallFulfillmentPct = skillsWithTarget.length
+        ? round1_(skillsWithTarget.reduce(function (sum, s) { return sum + s.fulfillmentPct; }, 0) / skillsWithTarget.length)
+        : 100;
+
+      return {
+        department: dept,
+        userCount: userCount,
+        skills: skills,
+        overallFulfillmentPct: overallFulfillmentPct
+      };
+    });
+
+    // --- ค่าเฉลี่ยรวมทั้งองค์กร (ไม่แยกหน่วยงาน) เทียบกับเกณฑ์กลาง (default) ---
+    var allUserIds = users.map(function (u) { return u.userId; });
+    var organizationAverage = skillNames.map(function (skill) {
+      var approvedTotal = sumXp(allUserIds, skill, 'approved');
+      var pendingTotal = sumXp(allUserIds, skill, 'submitted');
+      var avgApprovedXp = approvedTotal / users.length;
+      var avgPendingXp = pendingTotal / users.length;
+      var targetXp = resolveBenchmarkXp_(config, 'default', skill);
+
+      var gapXp = Math.max(0, targetXp - avgApprovedXp);
+      var fulfillmentPct = targetXp > 0 ? Math.min(100, (avgApprovedXp / targetXp) * 100) : 100;
+      var projectedFulfillmentPct = targetXp > 0
+        ? Math.min(100, ((avgApprovedXp + avgPendingXp) / targetXp) * 100)
+        : 100;
+
+      return {
+        skill: skill,
+        avgApprovedXp: round1_(avgApprovedXp),
+        avgPendingXp: round1_(avgPendingXp),
+        targetXp: targetXp,
+        gapXp: round1_(gapXp),
+        fulfillmentPct: round1_(fulfillmentPct),
+        projectedFulfillmentPct: round1_(projectedFulfillmentPct),
+        hasTarget: targetXp > 0
+      };
+    });
+
+    // --- Critical Gaps: เรียงจาก fulfillmentPct ต่ำสุด (ห่างเป้าหมายมากที่สุด) ---
+    var criticalGaps = [];
+    departments.forEach(function (d) {
+      d.skills.forEach(function (s) {
+        if (s.hasTarget && s.gapXp > 0) {
+          criticalGaps.push({
+            department: d.department,
+            skill: s.skill,
+            gapXp: s.gapXp,
+            fulfillmentPct: s.fulfillmentPct
+          });
+        }
+      });
+    });
+    criticalGaps.sort(function (a, b) { return a.fulfillmentPct - b.fulfillmentPct; });
+    criticalGaps = criticalGaps.slice(0, 5);
+
+    return {
+      departments: departments,
+      organizationAverage: organizationAverage,
+      criticalGaps: criticalGaps
+    };
+
+  } catch (err) {
+    Logger.log('getSkillGapAnalysis() error: ' + err.message + '\n' + (err.stack || ''));
+    throw new Error('getSkillGapAnalysis ล้มเหลว: ' + err.message);
+  }
+}
+
+/* ==================================================================
  * INTERNAL HELPERS — ฟังก์ชันภายใน (ไม่เรียกจาก client)
  * ================================================================== */
 
@@ -553,6 +724,34 @@ function getSubmissionsByUser_(userId) {
       return obj;
     })
     .sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+}
+
+/**
+ * ดึง submissions ทั้งหมดในระบบ (ทุก user) แบบ normalized
+ * ใช้เฉพาะกรณีที่ต้องสรุปข้อมูลข้ามหลาย user เช่น Skill Gap Analysis / Dashboard
+ * (ต่างจาก getSubmissionsByUser_ ที่กรองเฉพาะ user คนเดียว)
+ */
+function getAllSubmissions_() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
+  if (!sheet) {
+    throw new Error('ไม่พบ Sheet "Submissions" — กรุณารัน setupSheet() ก่อน');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+
+  return data.slice(1).map(function (row) {
+    var obj = {};
+    headers.forEach(function (h, i) { obj[h] = row[i]; });
+
+    obj.userId = String(obj.userId || '');
+    obj.skill = String(obj.skill || '');
+    obj.status = String(obj.status || 'submitted');
+    obj.xp = Number(obj.xp);
+    if (isNaN(obj.xp)) obj.xp = 0;
+
+    return obj;
+  });
 }
 
 /** หา row number (1-based, ตรงกับ getRange จริง) ของ submission ตาม id — คืน -1 ถ้าไม่พบ */
@@ -657,6 +856,8 @@ function callOcrWebhook_(fileBlob) {
 
 /**
  * ส่งข้อความที่ OCR ได้ไปวิเคราะห์ทักษะที่ KKU AI Gateway
+ * systemPrompt ดึงมาจาก Sheet "Config" (category=prompt, key=skillAnalysis)
+ * เพื่อให้ Admin แก้ไขข้อความ prompt ได้เองโดยไม่ต้องแก้โค้ด/deploy ใหม่
  * Response ที่คาดไว้จาก AI (message.content): valid JSON { "skill": "...", "level": "..." }
  */
 function callAiGateway_(ocrText) {
@@ -668,7 +869,6 @@ function callAiGateway_(ocrText) {
     throw new Error('ไม่พบ Script Property "AI_GATEWAY_BASE_URL" หรือ "AI_GATEWAY_API_KEY"');
   }
 
-  // 🔶 เปลี่ยนจาก hardcode string เป็นดึงจาก Sheet Config (category=prompt, key=skillAnalysis)
   var systemPrompt = loadPrompt_('skillAnalysis');
 
   var payload = {
@@ -717,7 +917,10 @@ function callAiGateway_(ocrText) {
   return result;
 }
 
-/** โหลดค่า baseXP (ตาม level), rarity (ตาม skill), curve (growupLevel) และ specialCurve (specialList) จาก Sheet "Config" */
+/**
+ * โหลดค่า baseXP (ตาม level), rarity (ตาม skill), curve (growupLevel), specialCurve (specialList)
+ * และ benchmark (เป้าหมาย XP เฉลี่ยต่อหน่วยงาน/ทักษะ สำหรับ Skill Gap Analysis) จาก Sheet "Config"
+ */
 function loadConfig_() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
   if (!sheet) {
@@ -725,7 +928,7 @@ function loadConfig_() {
   }
 
   var data = sheet.getDataRange().getValues();
-  var config = { level: {}, rarity: {}, curve: {}, specialCurve: {} };
+  var config = { level: {}, rarity: {}, curve: {}, specialCurve: {}, benchmark: {} };
 
   for (var i = 1; i < data.length; i++) {
     var category = String(data[i][0] || '').trim();
@@ -737,6 +940,60 @@ function loadConfig_() {
     }
   }
   return config;
+}
+
+/**
+ * โหลด prompt จาก Sheet "Config" (category = "prompt") ตาม key ที่กำหนด
+ * ให้ Admin แก้ไขข้อความ prompt ได้ผ่านชีตโดยตรง ไม่ต้องแก้โค้ด/deploy ใหม่
+ */
+function loadPrompt_(key) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+  if (!sheet) {
+    throw new Error('ไม่พบ Sheet "Config" — กรุณารัน setupSheet() ก่อน');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var category = data[i][0];
+    var rowKey = data[i][1];
+    var value = data[i][2];
+    if (category === 'prompt' && rowKey === key) {
+      if (!value || String(value).trim() === '') {
+        throw new Error('พบ prompt key="' + key + '" ใน Config แต่ค่า value เป็นค่าว่าง');
+      }
+      return String(value);
+    }
+  }
+
+  throw new Error(
+    'ไม่พบ prompt key="' + key + '" ใน Sheet "Config" (category=prompt) — ' +
+    'กรุณาเพิ่มแถว category="prompt", key="' + key + '" พร้อมข้อความ prompt ใน column value'
+  );
+}
+
+/**
+ * สร้าง key มาตรฐานสำหรับ benchmark (department::skill) — trim ป้องกันเว้นวรรคเกินจากชีต
+ * ใช้ร่วมกันทั้งตอน seed และตอน resolve ค่า
+ */
+function getBenchmarkKey_(department, skill) {
+  return String(department).trim() + '::' + String(skill).trim();
+}
+
+/**
+ * หาค่าเป้าหมาย (target XP) ของ department+skill คู่หนึ่ง
+ * ลำดับการค้นหา: 1) เกณฑ์เฉพาะของ department นั้น 2) เกณฑ์กลาง (default::skill) 3) ไม่มีเกณฑ์ -> คืน 0
+ * คืน 0 หมายถึง "ยังไม่ได้ตั้งเป้าหมายไว้" (ฝั่ง client จะแสดงว่ายังไม่มี benchmark ไม่ใช่ error)
+ */
+function resolveBenchmarkXp_(config, department, skill) {
+  var overrideKey = getBenchmarkKey_(department, skill);
+  if (config.benchmark[overrideKey] !== undefined && !isNaN(config.benchmark[overrideKey])) {
+    return config.benchmark[overrideKey];
+  }
+  var defaultKey = getBenchmarkKey_('default', skill);
+  if (config.benchmark[defaultKey] !== undefined && !isNaN(config.benchmark[defaultKey])) {
+    return config.benchmark[defaultKey];
+  }
+  return 0;
 }
 
 /** คำนวณ level และ XP ที่เข้า/ต้องการของ level ปัจจุบัน จาก XP รวม ตามสูตร base × N^exponent */
@@ -789,6 +1046,10 @@ function debugGetSubmissions_() {
 
 function debugGetPending_() {
   Logger.log(JSON.stringify(getPendingSubmissions(), null, 2));
+}
+
+function debugGetSkillGap_() {
+  Logger.log(JSON.stringify(getSkillGapAnalysis(), null, 2));
 }
 
 /**
@@ -903,33 +1164,4 @@ function getDashboardStats() {
     skillCounts: skillCounts,
     leaderboard: leaderboard
   };
-}
-
-/**
- * โหลด prompt จาก Sheet "Config" (category = "prompt") ตาม key ที่กำหนด
- * ให้ Admin แก้ไขข้อความ prompt ได้ผ่านชีตโดยตรง ไม่ต้องแก้โค้ด/deploy ใหม่
- */
-function loadPrompt_(key) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
-  if (!sheet) {
-    throw new Error('ไม่พบ Sheet "Config" — กรุณารัน setupSheet() ก่อน');
-  }
-
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    var category = data[i][0];
-    var rowKey = data[i][1];
-    var value = data[i][2];
-    if (category === 'prompt' && rowKey === key) {
-      if (!value || String(value).trim() === '') {
-        throw new Error('พบ prompt key="' + key + '" ใน Config แต่ค่า value เป็นค่าว่าง');
-      }
-      return String(value);
-    }
-  }
-
-  throw new Error(
-    'ไม่พบ prompt key="' + key + '" ใน Sheet "Config" (category=prompt) — ' +
-    'กรุณาเพิ่มแถว category="prompt", key="' + key + '" พร้อมข้อความ prompt ใน column value'
-  );
 }
